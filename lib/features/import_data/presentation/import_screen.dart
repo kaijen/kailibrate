@@ -219,7 +219,7 @@ class ImportScreen extends ConsumerWidget {
           final id = await db.insertQuestion(
             QuestionsCompanion.insert(
               questionText: q.text,
-              category: file.category,
+              category: q.category ?? file.category,
               tags: drift.Value(tagsJson),
               source: drift.Value(file.source),
               hasKnownAnswer: drift.Value(q.answer != null),
@@ -338,6 +338,14 @@ class _ErrorCard extends StatelessWidget {
   }
 }
 
+String _categoryLabel(ImportFile file) {
+  final perQuestion =
+      file.questions.map((q) => q.category).whereType<String>().toSet();
+  if (perQuestion.length > 1) return 'Gemischt';
+  final cat = perQuestion.firstOrNull ?? file.category;
+  return cat == 'epistemic' ? 'Epistemisch' : 'Aleatorisch';
+}
+
 class _PreviewSection extends StatelessWidget {
   final ImportFile file;
   final String filename;
@@ -360,8 +368,7 @@ class _PreviewSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _PreviewRow('Datei', filename),
-                _PreviewRow('Kategorie',
-                    file.category == 'epistemic' ? 'Epistemisch' : 'Aleatorisch'),
+                _PreviewRow('Kategorie', _categoryLabel(file)),
                 if (file.source != null)
                   _PreviewRow('Quelle', file.source!),
                 _PreviewRow('Fragen', '${file.questions.length}'),

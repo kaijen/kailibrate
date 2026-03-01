@@ -236,6 +236,154 @@ questions:
     });
   });
 
+  group('ImportParser – v2 App-Export', () {
+    test('parst v2-Export ohne top-level category', () {
+      const content = '''
+{
+  "version": 2,
+  "exportedAt": "2026-03-01T12:00:00.000Z",
+  "questions": [
+    {
+      "id": 1,
+      "text": "Liegt Santiago de Chile östlich von New York?",
+      "category": "epistemic",
+      "predictionType": "probability",
+      "tags": ["geography"],
+      "source": "Geografie-Trivia",
+      "hasKnownAnswer": true,
+      "knownAnswer": true,
+      "deadline": null,
+      "createdAt": "2026-03-01T10:00:00.000Z",
+      "estimate": {
+        "probability": 0.35,
+        "lowerBound": null,
+        "upperBound": null,
+        "unit": null,
+        "confidenceLevel": 0.9,
+        "binaryChoice": null,
+        "createdAt": "2026-03-01T10:05:00.000Z"
+      }
+    }
+  ]
+}
+''';
+      final result = ImportParser.parse(content, 'export.json');
+      expect(result.version, 2);
+      expect(result.category, 'epistemic');
+      expect(result.questions.length, 1);
+      final q = result.questions.first;
+      expect(q.text, 'Liegt Santiago de Chile östlich von New York?');
+      expect(q.category, 'epistemic');
+      expect(q.answer, true);
+      expect(q.probability, 0.35);
+      expect(q.confidenceLevel, 0.9);
+    });
+
+    test('liest hasKnownAnswer=false als answer=null', () {
+      const content = '''
+{
+  "version": 2,
+  "exportedAt": "2026-03-01T12:00:00.000Z",
+  "questions": [
+    {
+      "text": "Frage ohne bekannte Antwort",
+      "category": "aleatory",
+      "predictionType": "probability",
+      "tags": [],
+      "hasKnownAnswer": false,
+      "knownAnswer": null,
+      "createdAt": "2026-03-01T10:00:00.000Z"
+    }
+  ]
+}
+''';
+      final result = ImportParser.parse(content, 'export.json');
+      expect(result.questions.first.answer, isNull);
+    });
+
+    test('liest Schätzfelder aus verschachteltem estimate-Objekt', () {
+      const content = '''
+{
+  "version": 2,
+  "exportedAt": "2026-03-01T12:00:00.000Z",
+  "questions": [
+    {
+      "text": "Intervall-Frage",
+      "category": "aleatory",
+      "predictionType": "interval",
+      "tags": [],
+      "hasKnownAnswer": false,
+      "knownAnswer": null,
+      "createdAt": "2026-03-01T10:00:00.000Z",
+      "estimate": {
+        "probability": 0.8,
+        "lowerBound": 20.0,
+        "upperBound": 45.0,
+        "unit": "km",
+        "confidenceLevel": 0.8,
+        "binaryChoice": null,
+        "createdAt": "2026-03-01T10:05:00.000Z"
+      }
+    }
+  ]
+}
+''';
+      final result = ImportParser.parse(content, 'export.json');
+      final q = result.questions.first;
+      expect(q.predictionType, 'interval');
+      expect(q.lowerBound, 20.0);
+      expect(q.upperBound, 45.0);
+      expect(q.unit, 'km');
+      expect(q.confidenceLevel, 0.8);
+    });
+
+    test('leitet category aus erster Frage ab bei gemischtem Export', () {
+      const content = '''
+{
+  "version": 2,
+  "exportedAt": "2026-03-01T12:00:00.000Z",
+  "questions": [
+    {
+      "text": "Episteme Frage",
+      "category": "epistemic",
+      "predictionType": "probability",
+      "tags": [],
+      "hasKnownAnswer": false,
+      "knownAnswer": null,
+      "createdAt": "2026-03-01T10:00:00.000Z"
+    },
+    {
+      "text": "Aleatorische Frage",
+      "category": "aleatory",
+      "predictionType": "probability",
+      "tags": [],
+      "hasKnownAnswer": false,
+      "knownAnswer": null,
+      "createdAt": "2026-03-01T10:00:00.000Z"
+    }
+  ]
+}
+''';
+      final result = ImportParser.parse(content, 'export.json');
+      expect(result.category, 'epistemic'); // aus erster Frage
+      expect(result.questions[0].category, 'epistemic');
+      expect(result.questions[1].category, 'aleatory');
+    });
+
+    test('v1: fehlende category wirft weiterhin Exception', () {
+      const content = '''
+{
+  "version": 1,
+  "questions": [{"text": "Frage"}]
+}
+''';
+      expect(
+        () => ImportParser.parse(content, 'test.json'),
+        throwsA(isA<ImportParseException>()),
+      );
+    });
+  });
+
   group('ImportParseException', () {
     test('toString includes message', () {
       const ex = ImportParseException('Testfehler');

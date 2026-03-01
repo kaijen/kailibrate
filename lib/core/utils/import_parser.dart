@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 class ImportQuestion {
   final String text;
+  final String? category;        // per-Frage, nur in v2-Exporten gesetzt
   final List<String> tags;
   final bool? answer;
   final DateTime? deadline;
@@ -17,6 +18,7 @@ class ImportQuestion {
 
   const ImportQuestion({
     required this.text,
+    this.category,
     this.tags = const [],
     this.answer,
     this.deadline,
@@ -109,10 +111,14 @@ class ImportParser {
     if (version == null) {
       throw const ImportParseException('Pflichtfeld "version" fehlt.');
     }
+    final versionInt = (version as num).toInt();
 
-    final category = data['category'] as String?;
-    if (category == null ||
-        (category != 'epistemic' && category != 'aleatory')) {
+    // v1: top-level category Pflichtfeld; v2 (App-Export): category pro Frage
+    final topLevelCategory = data['category'] as String?;
+    if (versionInt < 2 &&
+        (topLevelCategory == null ||
+            (topLevelCategory != 'epistemic' &&
+                topLevelCategory != 'aleatory'))) {
       throw const ImportParseException(
           'Pflichtfeld "category" muss "epistemic" oder "aleatory" sein.');
     }
@@ -141,8 +147,6 @@ class ImportParser {
           ? rawTags.map((t) => t.toString()).toList()
           : <String>[];
 
-      final answer = qMap['answer'] as bool?;
-
       DateTime? deadline;
       final rawDeadline = qMap['deadline'];
       if (rawDeadline != null) {
@@ -156,16 +160,46 @@ class ImportParser {
               ? rawType!
               : 'probability';
 
-      // Schätzfelder
-      final probability = (qMap['probability'] as num?)?.toDouble();
-      final binaryChoice = qMap['binaryChoice'] as bool?;
-      final confidenceLevel = (qMap['confidenceLevel'] as num?)?.toDouble();
-      final lowerBound = (qMap['lowerBound'] as num?)?.toDouble();
-      final upperBound = (qMap['upperBound'] as num?)?.toDouble();
-      final unit = qMap['unit'] as String?;
+      // v2-Export: category pro Frage, answer via hasKnownAnswer+knownAnswer,
+      // Schätzfelder im verschachtelten 'estimate'-Objekt
+      final String? questionCategory;
+      final bool? answer;
+      double? probability;
+      bool? binaryChoice;
+      double? confidenceLevel;
+      double? lowerBound;
+      double? upperBound;
+      String? unit;
+
+      if (versionInt >= 2) {
+        questionCategory = qMap['category'] as String?;
+        final hasKnownAnswer = qMap['hasKnownAnswer'] as bool? ?? false;
+        answer = hasKnownAnswer ? (qMap['knownAnswer'] as bool?) : null;
+
+        final rawEstimate = qMap['estimate'];
+        if (rawEstimate is Map) {
+          final est = Map<String, dynamic>.from(rawEstimate);
+          probability = (est['probability'] as num?)?.toDouble();
+          binaryChoice = est['binaryChoice'] as bool?;
+          confidenceLevel = (est['confidenceLevel'] as num?)?.toDouble();
+          lowerBound = (est['lowerBound'] as num?)?.toDouble();
+          upperBound = (est['upperBound'] as num?)?.toDouble();
+          unit = est['unit'] as String?;
+        }
+      } else {
+        questionCategory = null;
+        answer = qMap['answer'] as bool?;
+        probability = (qMap['probability'] as num?)?.toDouble();
+        binaryChoice = qMap['binaryChoice'] as bool?;
+        confidenceLevel = (qMap['confidenceLevel'] as num?)?.toDouble();
+        lowerBound = (qMap['lowerBound'] as num?)?.toDouble();
+        upperBound = (qMap['upperBound'] as num?)?.toDouble();
+        unit = qMap['unit'] as String?;
+      }
 
       questions.add(ImportQuestion(
         text: text,
+        category: questionCategory,
         tags: tags,
         answer: answer,
         deadline: deadline,
@@ -179,9 +213,15 @@ class ImportParser {
       ));
     }
 
+    // Effektive Gesamtkategorie: top-level wenn angegeben,
+    // sonst aus erster Frage ableiten (v2-Export)
+    final effectiveCategory = topLevelCategory ??
+        questions.map((q) => q.category).whereType<String>().firstOrNull ??
+        'epistemic';
+
     return ImportFile(
-      version: (version as num).toInt(),
-      category: category,
+      version: versionInt,
+      category: effectiveCategory,
       source: data['source'] as String?,
       questions: questions,
     );
