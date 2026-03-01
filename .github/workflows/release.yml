@@ -16,6 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Java einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Flutter einrichten
         uses: subosito/flutter-action@v2
         with:
@@ -30,7 +36,7 @@ jobs:
 
       - name: Keystore bereitstellen
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\n' | base64 --decode \
             > android/app/callibrate-release.jks
 
       - name: Release-APK bauen
