@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Weißer Kreis als Basis -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 A34,34 0 1 0 54.001,20 Z" />
+    <!-- Kalibrierungspfeil nach oben -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M54,30 L60,50 L54,46 L48,50 Z" />
+    <!-- Balken unten -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M42,60 L66,60 L66,65 L42,65 Z" />
+</vector>
