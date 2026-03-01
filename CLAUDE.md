@@ -399,10 +399,13 @@ callibrate/
 │   │   │   └── presentation/
 │   │   │       ├── stats_provider.dart
 │   │   │       └── stats_screen.dart
-│   │   └── import/
+│   │   ├── import_data/
+│   │   │   └── presentation/
+│   │   │       ├── import_provider.dart
+│   │   │       └── import_screen.dart
+│   │   └── settings/
 │   │       └── presentation/
-│   │           ├── import_provider.dart
-│   │           └── import_screen.dart
+│   │           └── settings_screen.dart
 │   └── shared/
 │       ├── widgets/
 │       │   ├── probability_slider.dart
@@ -575,6 +578,7 @@ dependencies:
   yaml: ^3.1.2
   fl_chart: ^0.69.0
   intl: ^0.19.0
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
@@ -597,7 +601,7 @@ flutter:
 
 ## Import-Workflow
 
-1. Nutzer wählt Datei über `file_picker` (JSON oder YAML).
+1. Nutzer wählt Datei über `file_picker` (JSON oder YAML) **oder** fügt Text aus der Zwischenablage ein (`parseAutoDetect()` erkennt Format automatisch).
 2. `import_parser.dart` liest und validiert das Schema.
 3. Vorschau: Liste der Fragen, Kategorie, Anzahl – Nutzer bestätigt.
 4. Fragen werden in `Questions`-Tabelle geschrieben, Batch in `ImportBatches` protokolliert.

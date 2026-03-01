@@ -8,10 +8,12 @@ Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht beha
 
 ## Was die App kann
 
-- **Vorhersagen erfassen** – manuell oder per JSON/YAML-Import
+- **Vorhersagen erfassen** – manuell oder per JSON/YAML-Import (Datei oder Zwischenablage)
 - **Wahrscheinlichkeit schätzen** – Slider von 0 bis 100 %
 - **Ergebnis auflösen** – nach Eintreten oder Nicht-Eintreten des Ereignisses
 - **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve
+- **Nach Tags filtern** – horizontaler FilterChip-Streifen in der Vorhersagenliste
+- **Daten exportieren** – vollständiges JSON-Backup per Android-Share-Sheet
 
 Zwei Kategorien:
 
@@ -42,7 +44,7 @@ LL = -(1/N) × Σ [oᵢ × log(pᵢ) + (1-oᵢ) × log(1-pᵢ)]
 
 ## Import-Format
 
-Fragenkataloge lassen sich als JSON oder YAML importieren:
+Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl oder direkt aus der Zwischenablage:
 
 ```json
 {
@@ -78,6 +80,7 @@ questions:
 - **Riverpod** – State Management
 - **go_router** – Navigation
 - **fl_chart** – Diagramme
+- **share_plus** – Datei-Export via Android-Share-Sheet
 
 ---
 
