@@ -66,7 +66,7 @@ class PredictionCard extends StatelessWidget {
                     const Icon(Icons.percent, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      'Schätzung: ${(prediction.estimate!.probability * 100).round()} %',
+                      'Schätzung: ${_estimateLabel(prediction)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -101,6 +101,24 @@ class PredictionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _estimateLabel(PredictionView prediction) {
+  final estimate = prediction.estimate!;
+  final type = prediction.question.predictionType;
+  return switch (type) {
+    'binary' => estimate.binaryChoice == true
+        ? 'JA – ${(estimate.confidenceLevel * 100).round()} %'
+        : 'NEIN – ${(estimate.confidenceLevel * 100).round()} %',
+    'interval' => () {
+        final lower = estimate.lowerBound;
+        final upper = estimate.upperBound;
+        final unit = estimate.unit ?? '';
+        final unitStr = unit.isNotEmpty ? ' $unit' : '';
+        return '[${lower?.toStringAsFixed(1) ?? '?'} – ${upper?.toStringAsFixed(1) ?? '?'}$unitStr] @ ${(estimate.confidenceLevel * 100).round()} %';
+      }(),
+    _ => '${(estimate.probability * 100).round()} %',
+  };
 }
 
 class _StatusBadge extends StatelessWidget {

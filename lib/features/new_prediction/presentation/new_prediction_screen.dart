@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/providers.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/notification_service.dart';
 
 class NewPredictionScreen extends ConsumerStatefulWidget {
   const NewPredictionScreen({super.key});
@@ -18,8 +19,10 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
   final _tagsController = TextEditingController();
+  final _unitController = TextEditingController();
 
   String _category = 'epistemic';
+  String _predictionType = 'probability';
   DateTime? _deadline;
   bool _saving = false;
 
@@ -27,6 +30,7 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
   void dispose() {
     _textController.dispose();
     _tagsController.dispose();
+    _unitController.dispose();
     super.dispose();
   }
 
@@ -62,14 +66,24 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
     final tags = _parsedTags;
 
     try {
-      await db.insertQuestion(
+      final id = await db.insertQuestion(
         QuestionsCompanion.insert(
           questionText: _textController.text.trim(),
           category: _category,
           tags: drift.Value(jsonEncode(tags)),
           deadline: drift.Value(_deadline),
+          predictionType: drift.Value(_predictionType),
         ),
       );
+
+      if (_deadline != null) {
+        await NotificationService.instance.scheduleDeadlineNotifications(
+          id,
+          _textController.text.trim(),
+          _deadline!,
+        );
+      }
+
       ref.invalidate(predictionsStreamProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,6 +136,47 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
                 return null;
               },
             ),
+            const SizedBox(height: 24),
+            Text(
+              'Vorhersagetyp',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(
+                  value: 'probability',
+                  label: Text('Wahrsch.'),
+                  icon: Icon(Icons.percent),
+                ),
+                ButtonSegment(
+                  value: 'binary',
+                  label: Text('Ja/Nein'),
+                  icon: Icon(Icons.toggle_on_outlined),
+                ),
+                ButtonSegment(
+                  value: 'interval',
+                  label: Text('Intervall'),
+                  icon: Icon(Icons.straighten),
+                ),
+              ],
+              selected: {_predictionType},
+              onSelectionChanged: (s) =>
+                  setState(() => _predictionType = s.first),
+            ),
+            const SizedBox(height: 8),
+            _TypeHintCard(type: _predictionType),
+            if (_predictionType == 'interval') ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _unitController,
+                decoration: const InputDecoration(
+                  labelText: 'Einheit (optional)',
+                  hintText: 'z.B. m, °C, kg',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             Text(
               'Kategorie',
@@ -205,12 +260,36 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save),
-              label:
-                  Text(_saving ? 'Speichere...' : 'Vorhersage erstellen'),
+              label: Text(_saving ? 'Speichere...' : 'Vorhersage erstellen'),
               onPressed: _saving ? null : _save,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TypeHintCard extends StatelessWidget {
+  final String type;
+
+  const _TypeHintCard({required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    final text = switch (type) {
+      'binary' =>
+        'Ja/Nein: Wähle im nächsten Schritt JA oder NEIN und gib deine Konfidenz an (z.B. JA mit 80 % → P = 0,80).',
+      'interval' =>
+        'Intervall: Gib eine untere und obere Grenze an. Das Ereignis gilt als eingetreten, wenn der tatsächliche Wert im Intervall liegt.',
+      _ =>
+        'Wahrscheinlichkeit: Schätze direkt auf einem Slider von 0 bis 100 %.',
+    };
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text(text, style: Theme.of(context).textTheme.bodySmall),
       ),
     );
   }

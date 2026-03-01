@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' as drift;
@@ -57,15 +58,17 @@ class _ResolveBody extends ConsumerStatefulWidget {
 
 class _ResolveBodyState extends ConsumerState<_ResolveBody> {
   final _notesController = TextEditingController();
+  final _numericController = TextEditingController();
   bool _saving = false;
 
   @override
   void dispose() {
     _notesController.dispose();
+    _numericController.dispose();
     super.dispose();
   }
 
-  Future<void> _resolve(bool outcome) async {
+  Future<void> _resolve(bool outcome, {double? numericOutcome}) async {
     if (_saving) return;
     setState(() => _saving = true);
 
@@ -78,14 +81,14 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
           notes: drift.Value(_notesController.text.trim().isEmpty
               ? null
               : _notesController.text.trim()),
+          numericOutcome: drift.Value(numericOutcome),
         ),
       );
       ref.invalidate(predictionsStreamProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Aufgelöst als: ${outcome ? "Ja" : "Nein"}'),
+            content: Text('Aufgelöst als: ${outcome ? "Ja" : "Nein"}'),
           ),
         );
         context.pop();
@@ -95,10 +98,30 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
     }
   }
 
+  Future<void> _resolveInterval() async {
+    final raw = _numericController.text.trim().replaceAll(',', '.');
+    final value = double.tryParse(raw);
+    if (value == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte gib einen gültigen Zahlenwert ein.')),
+      );
+      return;
+    }
+
+    final estimate = widget.data.estimate;
+    final lower = estimate?.lowerBound;
+    final upper = estimate?.upperBound;
+    final outcome =
+        (lower != null && upper != null) ? (value >= lower && value <= upper) : false;
+
+    await _resolve(outcome, numericOutcome: value);
+  }
+
   @override
   Widget build(BuildContext context) {
     final q = widget.data.question;
     final estimate = widget.data.estimate;
+    final type = q.predictionType;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -111,55 +134,52 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
           ),
           const SizedBox(height: 24),
           if (estimate != null) ...[
-            Card(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              child: ListTile(
-                leading: const Icon(Icons.percent),
-                title: const Text('Deine Schätzung'),
-                trailing: Text(
-                  '${(estimate.probability * 100).round()} %',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ),
-            ),
+            _EstimateCard(estimate: estimate, type: type),
             const SizedBox(height: 24),
           ],
-          Text(
-            'Was ist eingetreten?',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Ja'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.green.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+          if (type == 'interval') ...[
+            _IntervalResolveInput(
+              controller: _numericController,
+              estimate: estimate,
+              saving: _saving,
+              onResolve: _resolveInterval,
+            ),
+          ] else ...[
+            Text(
+              'Was ist eingetreten?',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.check_circle_outline),
+                    label: const Text('Ja'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                    ),
+                    onPressed: _saving ? null : () => _resolve(true),
                   ),
-                  onPressed: _saving ? null : () => _resolve(true),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.cancel_outlined),
-                  label: const Text('Nein'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text('Nein'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                    ),
+                    onPressed: _saving ? null : () => _resolve(false),
                   ),
-                  onPressed: _saving ? null : () => _resolve(false),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: 24),
           TextField(
             controller: _notesController,
@@ -176,6 +196,106 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _EstimateCard extends StatelessWidget {
+  final Estimate estimate;
+  final String type;
+
+  const _EstimateCard({required this.estimate, required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (type) {
+      'binary' => estimate.binaryChoice == true
+          ? 'JA – ${(estimate.confidenceLevel * 100).round()} %'
+          : 'NEIN – ${(estimate.confidenceLevel * 100).round()} %',
+      'interval' => () {
+          final lower = estimate.lowerBound;
+          final upper = estimate.upperBound;
+          final unit = estimate.unit ?? '';
+          final unitStr = unit.isNotEmpty ? ' $unit' : '';
+          return '[${lower?.toStringAsFixed(1) ?? '?'} – ${upper?.toStringAsFixed(1) ?? '?'}$unitStr] @ ${(estimate.confidenceLevel * 100).round()} %';
+        }(),
+      _ => '${(estimate.probability * 100).round()} %',
+    };
+
+    return Card(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: ListTile(
+        leading: const Icon(Icons.percent),
+        title: const Text('Deine Schätzung'),
+        trailing: Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+}
+
+class _IntervalResolveInput extends StatelessWidget {
+  final TextEditingController controller;
+  final Estimate? estimate;
+  final bool saving;
+  final VoidCallback onResolve;
+
+  const _IntervalResolveInput({
+    required this.controller,
+    required this.estimate,
+    required this.saving,
+    required this.onResolve,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final lower = estimate?.lowerBound;
+    final upper = estimate?.upperBound;
+    final unit = estimate?.unit ?? '';
+    final unitStr = unit.isNotEmpty ? ' $unit' : '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tatsächlicher Wert$unitStr',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        if (lower != null && upper != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Schätzintervall: ${lower.toStringAsFixed(1)} – ${upper.toStringAsFixed(1)}$unitStr',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+        const SizedBox(height: 12),
+        TextField(
+          controller: controller,
+          keyboardType:
+              const TextInputType.numberWithOptions(decimal: true, signed: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\-]')),
+          ],
+          decoration: InputDecoration(
+            labelText: 'Messwert$unitStr',
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            icon: const Icon(Icons.check),
+            label: const Text('Auflösen'),
+            onPressed: saving ? null : onResolve,
+          ),
+        ),
+      ],
     );
   }
 }

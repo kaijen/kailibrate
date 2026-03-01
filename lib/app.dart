@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'core/providers.dart';
+import 'core/services/notification_service.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/predictions/presentation/predictions_screen.dart';
 import 'features/estimate/presentation/estimate_screen.dart';
@@ -32,11 +34,28 @@ final _router = GoRouter(
   ],
 );
 
-class CallibrateApp extends ConsumerWidget {
+class CallibrateApp extends ConsumerStatefulWidget {
   const CallibrateApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CallibrateApp> createState() => _CallibrateAppState();
+}
+
+class _CallibrateAppState extends ConsumerState<CallibrateApp> {
+  @override
+  void initState() {
+    super.initState();
+    _rescheduleNotifications();
+  }
+
+  Future<void> _rescheduleNotifications() async {
+    final db = ref.read(appDatabaseProvider);
+    final predictions = await db.getAllPredictionViews();
+    await NotificationService.instance.rescheduleAll(predictions);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Callibrate',
       theme: AppTheme.light(),

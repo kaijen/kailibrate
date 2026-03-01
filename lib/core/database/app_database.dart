@@ -21,14 +21,25 @@ class Questions extends Table {
   DateTimeColumn get deadline => dateTime().nullable()();
   DateTimeColumn get createdAt =>
       dateTime().withDefault(currentDateAndTime)();
+  // v2: Vorhersagetyp
+  TextColumn get predictionType =>
+      text().withDefault(const Constant('probability'))();
+  // 'probability' | 'binary' | 'interval'
 }
 
 class Estimates extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get questionId => integer().references(Questions, #id)();
-  RealColumn get probability => real()(); // 0.0 – 1.0
+  RealColumn get probability => real()(); // 0.0 – 1.0 (kanonischer Kalibrierwert)
   DateTimeColumn get createdAt =>
       dateTime().withDefault(currentDateAndTime)();
+  // v2: erweiterte Schätzfelder
+  RealColumn get lowerBound => real().nullable()();
+  RealColumn get upperBound => real().nullable()();
+  TextColumn get unit => text().nullable()(); // z. B. "m", "°C"
+  RealColumn get confidenceLevel =>
+      real().withDefault(const Constant(0.9))();
+  BoolColumn get binaryChoice => boolean().nullable()(); // true=JA, false=NEIN
 
   @override
   List<Set<Column>> get uniqueKeys => [
@@ -43,6 +54,8 @@ class Resolutions extends Table {
   TextColumn get notes => text().nullable()();
   DateTimeColumn get resolvedAt =>
       dateTime().withDefault(currentDateAndTime)();
+  // v2: tatsächlicher Messwert für interval-Typ
+  RealColumn get numericOutcome => real().nullable()();
 }
 
 class ImportBatches extends Table {
@@ -92,7 +105,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(questions, questions.predictionType);
+            await m.addColumn(estimates, estimates.lowerBound);
+            await m.addColumn(estimates, estimates.upperBound);
+            await m.addColumn(estimates, estimates.unit);
+            await m.addColumn(estimates, estimates.confidenceLevel);
+            await m.addColumn(estimates, estimates.binaryChoice);
+            await m.addColumn(resolutions, resolutions.numericOutcome);
+          }
+        },
+      );
 
   // --- Questions ---
 
@@ -202,6 +230,7 @@ class AppDatabase extends _$AppDatabase {
         'id': q.id,
         'text': q.questionText,
         'category': q.category,
+        'predictionType': q.predictionType,
         'tags': jsonDecode(q.tags),
         'source': q.source,
         'hasKnownAnswer': q.hasKnownAnswer,
@@ -211,18 +240,24 @@ class AppDatabase extends _$AppDatabase {
         if (estimate != null)
           'estimate': {
             'probability': estimate.probability,
+            'lowerBound': estimate.lowerBound,
+            'upperBound': estimate.upperBound,
+            'unit': estimate.unit,
+            'confidenceLevel': estimate.confidenceLevel,
+            'binaryChoice': estimate.binaryChoice,
             'createdAt': estimate.createdAt.toIso8601String(),
           },
         if (resolution != null)
           'resolution': {
             'outcome': resolution.outcome,
+            'numericOutcome': resolution.numericOutcome,
             'notes': resolution.notes,
             'resolvedAt': resolution.resolvedAt.toIso8601String(),
           },
       });
     }
     return {
-      'version': 1,
+      'version': 2,
       'exportedAt': DateTime.now().toIso8601String(),
       'questions': result,
     };
