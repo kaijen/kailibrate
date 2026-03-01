@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-03-01
+
+### Added
+- Dashboard stat cards (Offen, Ausstehend, Aufgelöst) are now tappable
+  and navigate directly to the predictions list on the matching tab
+
+### Fixed
+- Release APK signing: replaced machine-specific debug keystore with a
+  dedicated release keystore loaded from `key.properties` or CI secrets;
+  prevents "Update not installed" errors when sideloading updates
+
 ## [0.3.0] - 2026-03-01
 
 ### Added
@@ -73,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/callibrate/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/kaijen/callibrate/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/kaijen/callibrate/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kaijen/callibrate/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/kaijen/callibrate/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kaijen/callibrate/compare/v0.1.2...v0.2.0
