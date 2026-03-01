@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "category": "epistemic",
+  "source": "Geografie-Trivia",
+  "questions": [
+    {
+      "text": "Liegt Santiago de Chile östlich von New York?",
+      "tags": ["geography"],
+      "answer": true
+    },
+    {
+      "text": "Hat Australien mehr Schafe als Einwohner?",
+      "tags": ["geography", "animals"],
+      "answer": true
+    },
+    {
+      "text": "Ist der Nil länger als der Amazonas?",
+      "tags": ["geography"],
+      "answer": false
+    },
+    {
+      "text": "War Albert Einstein Vegetarier?",
+      "tags": ["history", "science"],
+      "answer": false
+    },
+    {
+      "text": "Hat Russland mehr Zeitzonen als jedes andere Land?",
+      "tags": ["geography"],
+      "answer": true
+    },
+    {
+      "text": "Ist Grönland größer als Afrika?",
+      "tags": ["geography"],
+      "answer": false
+    },
+    {
+      "text": "Wurde das erste iPhone 2007 vorgestellt?",
+      "tags": ["technology", "history"],
+      "answer": true
+    },
+    {
+      "text": "Hat die Fledermaus einen schlechteren Sehsinn als Menschen?",
+      "tags": ["biology"],
+      "answer": false
+    }
+  ]
+}

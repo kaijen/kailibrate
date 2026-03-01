@@ -1,0 +1,52 @@
+# Diverses
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+tmp/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+# .vscode/
+
+# Flutter / Dart / Pub
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+coverage/
+
+# Generierte Dateien (Drift, Riverpod, Freezed)
+*.g.dart
+*.freezed.dart
+
+# Symbolication / Obfuskierung
+app.*.symbols
+app.*.map.json
+
+# Android Build-Artefakte
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/.gradle/
+/android/local.properties
+
+# Android Signing – nie einchecken
+key.properties
+*.jks
+*.keystore

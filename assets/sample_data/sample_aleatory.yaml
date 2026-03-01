@@ -1,0 +1,12 @@
+version: 1
+category: aleatory
+source: Alltagsprognosen
+questions:
+  - text: Werde ich heute mehr als 8000 Schritte gehen?
+    tags: [daily, health]
+  - text: Wird es morgen in meiner Stadt regnen?
+    tags: [weather, daily]
+  - text: Werde ich diese Woche Sport treiben?
+    tags: [health, weekly]
+  - text: Werde ich heute Abend weniger als eine Stunde Bildschirmzeit haben?
+    tags: [habits, daily]
