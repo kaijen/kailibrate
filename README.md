@@ -11,9 +11,11 @@ Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht beha
 - **Vorhersagen erfassen** – manuell oder per JSON/YAML-Import (Datei oder Zwischenablage)
 - **Wahrscheinlichkeit schätzen** – direkt beim Erfassen oder nachträglich; drei Eingabeformen: Slider, Ja/Nein mit Konfidenz, Intervall
 - **Ergebnis auflösen** – nach Eintreten oder Nicht-Eintreten des Ereignisses
+- **Detail-Ansicht** – Tippen auf eine aufgelöste Vorhersage zeigt Schätzung, Ergebnis und Notizen
 - **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve
 - **Nach Tags filtern** – horizontaler FilterChip-Streifen in der Vorhersagenliste
-- **Daten exportieren** – vollständiges JSON-Backup per Android-Share-Sheet
+- **Daten exportieren** – vollständiges JSON-Backup per Android-Share-Sheet; Auflösungen werden obfuskiert, damit geteilte Dateien keine Spoiler enthalten
+- **Import mit Auflösungen** – Fragenkataloge können Schätzungen und Auflösungen enthalten; bereits aufgelöste Fragen werden sofort korrekt markiert
 
 Zwei Kategorien:
 
@@ -44,7 +46,9 @@ LL = -(1/N) × Σ [oᵢ × log(pᵢ) + (1-oᵢ) × log(1-pᵢ)]
 
 ## Import-Format
 
-Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl oder direkt aus der Zwischenablage. Schätzungen können direkt in der Importdatei mitgeliefert werden und werden beim Import automatisch gespeichert.
+Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl oder direkt aus der Zwischenablage. Schätzungen und Auflösungen können direkt in der Importdatei mitgeliefert werden und werden beim Import automatisch gespeichert.
+
+Der App-eigene Export erzeugt ein vollständiges Backup im selben Format (Version 2). Auflösungen sind darin mit ROT13 + Base64 obfuskiert, damit geteilte Fragenkataloge keine Spoiler enthalten.
 
 ```json
 {
@@ -97,6 +101,9 @@ Felder pro Frage:
 | `lowerBound` | nein | Untergrenze (für `interval`) |
 | `upperBound` | nein | Obergrenze (für `interval`) |
 | `unit` | nein | Einheit des Intervalls, z.B. `km`, `°C` |
+| `resolution.outcome` | nein | Bekanntes Ergebnis `true`/`false` (löst Vorhersage sofort auf) |
+| `resolution.notes` | nein | Freitext zur Auflösung |
+| `resolution.numericOutcome` | nein | Tatsächlicher Messwert (für `interval`-Typ) |
 
 ---
 
