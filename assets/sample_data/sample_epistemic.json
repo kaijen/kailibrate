@@ -6,12 +6,14 @@
     {
       "text": "Liegt Santiago de Chile östlich von New York?",
       "tags": ["geography"],
-      "answer": true
+      "answer": true,
+      "probability": 0.35
     },
     {
       "text": "Hat Australien mehr Schafe als Einwohner?",
       "tags": ["geography", "animals"],
-      "answer": true
+      "answer": true,
+      "probability": 0.7
     },
     {
       "text": "Ist der Nil länger als der Amazonas?",

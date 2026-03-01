@@ -216,7 +216,7 @@ class ImportScreen extends ConsumerWidget {
       await db.transaction(() async {
         for (final q in file.questions) {
           final tagsJson = jsonEncode(q.tags);
-          await db.insertQuestion(
+          final id = await db.insertQuestion(
             QuestionsCompanion.insert(
               questionText: q.text,
               category: file.category,
@@ -225,8 +225,43 @@ class ImportScreen extends ConsumerWidget {
               hasKnownAnswer: drift.Value(q.answer != null),
               knownAnswer: drift.Value(q.answer),
               deadline: drift.Value(q.deadline),
+              predictionType: drift.Value(q.predictionType),
             ),
           );
+
+          if (q.hasEstimateData) {
+            double probability;
+            drift.Value<bool?> binaryChoice = const drift.Value(null);
+            drift.Value<double?> lowerBound = const drift.Value(null);
+            drift.Value<double?> upperBound = const drift.Value(null);
+            drift.Value<String?> unit = const drift.Value(null);
+            final cl = q.confidenceLevel ?? 0.9;
+
+            if (q.predictionType == 'binary') {
+              probability =
+                  q.binaryChoice! ? cl : 1.0 - cl;
+              binaryChoice = drift.Value(q.binaryChoice);
+            } else if (q.predictionType == 'interval') {
+              probability = cl;
+              lowerBound = drift.Value(q.lowerBound);
+              upperBound = drift.Value(q.upperBound);
+              if (q.unit != null) unit = drift.Value(q.unit);
+            } else {
+              probability = q.probability!;
+            }
+
+            await db.upsertEstimate(
+              EstimatesCompanion.insert(
+                questionId: id,
+                probability: probability,
+                confidenceLevel: drift.Value(cl),
+                binaryChoice: binaryChoice,
+                lowerBound: lowerBound,
+                upperBound: upperBound,
+                unit: unit,
+              ),
+            );
+          }
         }
 
         await db.insertImportBatch(
@@ -270,7 +305,8 @@ class _FormatInfoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'JSON oder YAML mit den Feldern: version, category (epistemic/aleatory), questions[]. '
-              'Jede Frage braucht mindestens "text". Optional: tags, answer, deadline.',
+              'Jede Frage braucht mindestens "text". Optional: tags, answer, deadline, predictionType, '
+              'probability, binaryChoice, confidenceLevel, lowerBound, upperBound, unit.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -310,6 +346,8 @@ class _PreviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estimateCount = file.questions.where((q) => q.hasEstimateData).length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,6 +365,8 @@ class _PreviewSection extends StatelessWidget {
                 if (file.source != null)
                   _PreviewRow('Quelle', file.source!),
                 _PreviewRow('Fragen', '${file.questions.length}'),
+                if (estimateCount > 0)
+                  _PreviewRow('Mit Schätzung', '$estimateCount'),
               ],
             ),
           ),
@@ -352,6 +392,10 @@ class _PreviewSection extends StatelessWidget {
                   subtitle: q.tags.isNotEmpty
                       ? Text(q.tags.join(', '),
                           style: Theme.of(context).textTheme.bodySmall)
+                      : null,
+                  trailing: q.hasEstimateData
+                      ? const Icon(Icons.percent,
+                          size: 16, color: Colors.blue)
                       : null,
                 ),
               ),
@@ -383,7 +427,7 @@ class _PreviewRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 100,
             child: Text(label,
                 style: Theme.of(context)
                     .textTheme

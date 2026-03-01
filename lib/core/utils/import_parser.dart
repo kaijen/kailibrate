@@ -6,13 +6,36 @@ class ImportQuestion {
   final List<String> tags;
   final bool? answer;
   final DateTime? deadline;
+  // Schätzfelder (optional)
+  final String predictionType;   // 'probability' | 'binary' | 'interval'
+  final double? probability;     // für probability-Typ
+  final bool? binaryChoice;      // für binary-Typ
+  final double? confidenceLevel; // für binary + interval
+  final double? lowerBound;      // für interval
+  final double? upperBound;      // für interval
+  final String? unit;            // für interval (z.B. "km", "°C")
 
   const ImportQuestion({
     required this.text,
     this.tags = const [],
     this.answer,
     this.deadline,
+    this.predictionType = 'probability',
+    this.probability,
+    this.binaryChoice,
+    this.confidenceLevel,
+    this.lowerBound,
+    this.upperBound,
+    this.unit,
   });
+
+  bool get hasEstimateData {
+    return (predictionType == 'probability' && probability != null) ||
+        (predictionType == 'binary' && binaryChoice != null) ||
+        (predictionType == 'interval' &&
+            lowerBound != null &&
+            upperBound != null);
+  }
 }
 
 class ImportFile {
@@ -106,7 +129,7 @@ class ImportParser {
       if (q is! Map) {
         throw ImportParseException('Frage $i ist kein Objekt.');
       }
-      final qMap = Map<String, dynamic>.from(q as Map);
+      final qMap = Map<String, dynamic>.from(q);
 
       final text = qMap['text'] as String?;
       if (text == null || text.trim().isEmpty) {
@@ -126,11 +149,33 @@ class ImportParser {
         deadline = DateTime.tryParse(rawDeadline.toString());
       }
 
+      // Vorhersagetyp – unbekannte Werte fallen auf 'probability' zurück
+      final rawType = qMap['predictionType'] as String?;
+      final predictionType =
+          {'probability', 'binary', 'interval'}.contains(rawType)
+              ? rawType!
+              : 'probability';
+
+      // Schätzfelder
+      final probability = (qMap['probability'] as num?)?.toDouble();
+      final binaryChoice = qMap['binaryChoice'] as bool?;
+      final confidenceLevel = (qMap['confidenceLevel'] as num?)?.toDouble();
+      final lowerBound = (qMap['lowerBound'] as num?)?.toDouble();
+      final upperBound = (qMap['upperBound'] as num?)?.toDouble();
+      final unit = qMap['unit'] as String?;
+
       questions.add(ImportQuestion(
         text: text,
         tags: tags,
         answer: answer,
         deadline: deadline,
+        predictionType: predictionType,
+        probability: probability,
+        binaryChoice: binaryChoice,
+        confidenceLevel: confidenceLevel,
+        lowerBound: lowerBound,
+        upperBound: upperBound,
+        unit: unit,
       ));
     }
 

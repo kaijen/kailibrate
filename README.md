@@ -9,7 +9,7 @@ Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht beha
 ## Was die App kann
 
 - **Vorhersagen erfassen** – manuell oder per JSON/YAML-Import (Datei oder Zwischenablage)
-- **Wahrscheinlichkeit schätzen** – Slider von 0 bis 100 %
+- **Wahrscheinlichkeit schätzen** – direkt beim Erfassen oder nachträglich; drei Eingabeformen: Slider, Ja/Nein mit Konfidenz, Intervall
 - **Ergebnis auflösen** – nach Eintreten oder Nicht-Eintreten des Ereignisses
 - **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve
 - **Nach Tags filtern** – horizontaler FilterChip-Streifen in der Vorhersagenliste
@@ -44,7 +44,7 @@ LL = -(1/N) × Σ [oᵢ × log(pᵢ) + (1-oᵢ) × log(1-pᵢ)]
 
 ## Import-Format
 
-Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl oder direkt aus der Zwischenablage:
+Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl oder direkt aus der Zwischenablage. Schätzungen können direkt in der Importdatei mitgeliefert werden und werden beim Import automatisch gespeichert.
 
 ```json
 {
@@ -55,7 +55,8 @@ Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl o
     {
       "text": "Liegt Santiago de Chile östlich von New York?",
       "tags": ["geography"],
-      "answer": true
+      "answer": true,
+      "probability": 0.35
     }
   ]
 }
@@ -64,12 +65,38 @@ Fragenkataloge lassen sich als JSON oder YAML importieren – per Dateiauswahl o
 ```yaml
 version: 1
 category: aleatory
-source: Börsenwetten Q1 2026
+source: Alltagsprognosen
 questions:
-  - text: Schließt der DAX am 31.03.2026 über 21000 Punkten?
-    tags: [finance]
-    deadline: "2026-03-31"
+  - text: Wird es morgen regnen?
+    tags: [weather]
+    predictionType: binary
+    binaryChoice: true
+    confidenceLevel: 0.65
+
+  - text: Wie viele Kilometer werde ich im März laufen?
+    tags: [health]
+    predictionType: interval
+    lowerBound: 20
+    upperBound: 45
+    confidenceLevel: 0.8
+    unit: km
 ```
+
+Felder pro Frage:
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| `text` | ja | Fragentext |
+| `tags` | nein | Liste von Schlagworten |
+| `answer` | nein | Bekannte Antwort (für Trivia) |
+| `deadline` | nein | ISO-8601-Datum der Auflösung |
+| `predictionType` | nein | `probability` (Standard), `binary`, `interval` |
+| `probability` | nein | Schätzwert 0–1 (für `probability`-Typ) |
+| `binaryChoice` | nein | `true`/`false` – Ja oder Nein (für `binary`) |
+| `confidenceLevel` | nein | Konfidenz 0–1 (für `binary` und `interval`, Standard: 0.9) |
+| `lowerBound` | nein | Untergrenze (für `interval`) |
+| `upperBound` | nein | Obergrenze (für `interval`) |
+| `unit` | nein | Einheit des Intervalls, z.B. `km`, `°C` |
 
 ---
 

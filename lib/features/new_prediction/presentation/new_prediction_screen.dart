@@ -6,6 +6,12 @@ import 'package:drift/drift.dart' as drift;
 import '../../../core/providers.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../shared/widgets/estimate_inputs.dart';
+import '../../../shared/widgets/probability_slider.dart';
+
+final _newEstimateProvider =
+    StateNotifierProvider.autoDispose<EstimateFormNotifier, EstimateFormState>(
+        (_) => EstimateFormNotifier());
 
 class NewPredictionScreen extends ConsumerStatefulWidget {
   const NewPredictionScreen({super.key});
@@ -25,6 +31,7 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
   String _predictionType = 'probability';
   DateTime? _deadline;
   bool _saving = false;
+  bool _estimateEnabled = false;
 
   @override
   void dispose() {
@@ -56,10 +63,39 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
     }
   }
 
+  String? _validateEstimate() {
+    final state = ref.read(_newEstimateProvider);
+    if (_predictionType == 'binary' && state.binaryChoice == null) {
+      return 'Bitte wähle Ja oder Nein für deine Schätzung.';
+    }
+    if (_predictionType == 'interval') {
+      final lower =
+          double.tryParse(state.lowerBoundText.replaceAll(',', '.'));
+      final upper =
+          double.tryParse(state.upperBoundText.replaceAll(',', '.'));
+      if (lower == null || upper == null) {
+        return 'Bitte gib gültige Zahlen für beide Grenzen ein.';
+      }
+      if (lower >= upper) {
+        return 'Die untere Grenze muss kleiner als die obere sein.';
+      }
+    }
+    return null;
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_saving) return;
 
+    if (_estimateEnabled) {
+      final estimateError = _validateEstimate();
+      if (estimateError != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(estimateError)));
+        return;
+      }
+    }
+
+    if (_saving) return;
     setState(() => _saving = true);
 
     final db = ref.read(appDatabaseProvider);
@@ -75,6 +111,42 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
           predictionType: drift.Value(_predictionType),
         ),
       );
+
+      if (_estimateEnabled) {
+        final estimateState = ref.read(_newEstimateProvider);
+        final probability =
+            computeEstimateProbability(estimateState, _predictionType);
+
+        drift.Value<double?> lowerBound = const drift.Value(null);
+        drift.Value<double?> upperBound = const drift.Value(null);
+        drift.Value<bool?> binaryChoice = const drift.Value(null);
+        drift.Value<String?> unit = const drift.Value(null);
+
+        if (_predictionType == 'binary') {
+          binaryChoice = drift.Value(estimateState.binaryChoice!);
+        } else if (_predictionType == 'interval') {
+          final lower = double.parse(
+              estimateState.lowerBoundText.replaceAll(',', '.'));
+          final upper = double.parse(
+              estimateState.upperBoundText.replaceAll(',', '.'));
+          lowerBound = drift.Value(lower);
+          upperBound = drift.Value(upper);
+          final unitText = _unitController.text.trim();
+          if (unitText.isNotEmpty) unit = drift.Value(unitText);
+        }
+
+        await db.upsertEstimate(
+          EstimatesCompanion.insert(
+            questionId: id,
+            probability: probability,
+            confidenceLevel: drift.Value(estimateState.confidenceLevel),
+            lowerBound: lowerBound,
+            upperBound: upperBound,
+            binaryChoice: binaryChoice,
+            unit: unit,
+          ),
+        );
+      }
 
       if (_deadline != null) {
         await NotificationService.instance.scheduleDeadlineNotifications(
@@ -251,6 +323,38 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
                 onPressed: () => setState(() => _deadline = null),
               ),
             ],
+            const SizedBox(height: 24),
+            SwitchListTile(
+              title: const Text('Schätzung direkt abgeben'),
+              subtitle:
+                  const Text('Optional – spare dir den separaten Schritt'),
+              value: _estimateEnabled,
+              onChanged: (v) => setState(() => _estimateEnabled = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            if (_estimateEnabled) ...[
+              const SizedBox(height: 16),
+              Consumer(
+                builder: (context, ref, _) {
+                  final state = ref.watch(_newEstimateProvider);
+                  final notifier = ref.read(_newEstimateProvider.notifier);
+                  final unit = _unitController.text.trim();
+                  return switch (_predictionType) {
+                    'binary' =>
+                      BinaryEstimateInput(state: state, notifier: notifier),
+                    'interval' => IntervalEstimateInput(
+                        state: state,
+                        notifier: notifier,
+                        unit: unit.isEmpty ? null : unit,
+                      ),
+                    _ => ProbabilitySlider(
+                        value: state.probability,
+                        onChanged: notifier.setProbability,
+                      ),
+                  };
+                },
+              ),
+            ],
             const SizedBox(height: 32),
             FilledButton.icon(
               icon: _saving
@@ -279,7 +383,7 @@ class _TypeHintCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = switch (type) {
       'binary' =>
-        'Ja/Nein: Wähle im nächsten Schritt JA oder NEIN und gib deine Konfidenz an (z.B. JA mit 80 % → P = 0,80).',
+        'Ja/Nein: Wähle JA oder NEIN und gib deine Konfidenz an (z.B. JA mit 80 % → P = 0,80).',
       'interval' =>
         'Intervall: Gib eine untere und obere Grenze an. Das Ereignis gilt als eingetreten, wenn der tatsächliche Wert im Intervall liegt.',
       _ =>

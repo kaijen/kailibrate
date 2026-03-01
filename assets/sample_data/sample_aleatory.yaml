@@ -6,7 +6,17 @@ questions:
     tags: [daily, health]
   - text: Wird es morgen in meiner Stadt regnen?
     tags: [weather, daily]
+    predictionType: binary
+    binaryChoice: true
+    confidenceLevel: 0.65
   - text: Werde ich diese Woche Sport treiben?
     tags: [health, weekly]
   - text: Werde ich heute Abend weniger als eine Stunde Bildschirmzeit haben?
     tags: [habits, daily]
+  - text: Wie viele Kilometer werde ich im März laufen?
+    tags: [health, sport]
+    predictionType: interval
+    lowerBound: 20
+    upperBound: 45
+    confidenceLevel: 0.8
+    unit: km
