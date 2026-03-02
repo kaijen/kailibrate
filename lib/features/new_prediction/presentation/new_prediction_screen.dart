@@ -335,6 +335,7 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
             if (_estimateEnabled) ...[
               const SizedBox(height: 16),
               Consumer(
+                key: const ValueKey('estimate-input'),
                 builder: (context, ref, _) {
                   final state = ref.watch(_newEstimateProvider);
                   final notifier = ref.read(_newEstimateProvider.notifier);
