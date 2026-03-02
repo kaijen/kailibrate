@@ -195,7 +195,7 @@ class _EstimateBody extends ConsumerWidget {
           }
         }
       }
-      await _showFeedback(context, db, effectiveOutcome, probability);
+      await _showFeedback(context, db, effectiveOutcome, probability, resolution);
       if (context.mounted) context.pop();
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -210,6 +210,7 @@ class _EstimateBody extends ConsumerWidget {
     AppDatabase db,
     bool outcome,
     double probability,
+    Resolution? resolution,
   ) async {
     final allViews = await db.getAllPredictionViews();
     if (!context.mounted) return;
@@ -244,6 +245,7 @@ class _EstimateBody extends ConsumerWidget {
         predictionType: type,
         overallStats: overallStats,
         typeStats: typeStats,
+        resolution: resolution,
       ),
     );
   }

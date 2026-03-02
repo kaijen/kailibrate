@@ -9,6 +9,7 @@ class CalibrationFeedbackSheet extends StatelessWidget {
   final String predictionType;
   final CalibrationStats overallStats;
   final CalibrationStats typeStats;
+  final Resolution? resolution;
 
   const CalibrationFeedbackSheet({
     super.key,
@@ -17,6 +18,7 @@ class CalibrationFeedbackSheet extends StatelessWidget {
     required this.predictionType,
     required this.overallStats,
     required this.typeStats,
+    this.resolution,
   });
 
   static const _typeLabels = {
@@ -103,6 +105,31 @@ class CalibrationFeedbackSheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
+            ],
+
+            // Auflösungsdetails (Notizen, Messwert)
+            if (resolution != null &&
+                (resolution!.notes != null ||
+                    resolution!.numericOutcome != null)) ...[
+              const SizedBox(height: 8),
+              FeedbackSectionCard(
+                title: 'Auflösung',
+                children: [
+                  if (resolution!.numericOutcome != null)
+                    FeedbackStatRow(
+                      'Messwert',
+                      resolution!.numericOutcome!.toStringAsFixed(2),
+                    ),
+                  if (resolution!.notes != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Text(
+                        resolution!.notes!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                ],
+              ),
             ],
 
             // Gesamtkalibrierung
