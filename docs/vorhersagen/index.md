@@ -12,7 +12,7 @@ Erfassen → Schätzen → Auflösen
 
 **Schätzen** – Wahrscheinlichkeit eingeben. Je nach Typ: Slider (0–100 %), Ja/Nein mit Konfidenz, oder Intervall mit Konfidenz.
 
-**Auflösen** – Tatsächliches Ergebnis eintragen. Die App berechnet daraus Brier Score und Log Loss.
+**Auflösen** – Tatsächliches Ergebnis eintragen. Die App zeigt danach ein Feedback-Sheet mit dem Brier-Beitrag dieser Schätzung sowie dem aktuellen Brier Score und Log Loss über alle aufgelösten Vorhersagen.
 
 ## Navigation
 
