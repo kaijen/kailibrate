@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-03-02
+
+### Changed
+- Import format reference restructured with per-field descriptions and
+  an import behavior table explaining the "Lösung vorhanden" flow
+- LLM prompt guide added to docs: three copy-ready prompts for
+  generating calibration exercises with hidden answers
+
 ## [0.7.0] - 2026-03-01
 
 ### Added
@@ -126,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/kaijen/calibrate/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kaijen/calibrate/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kaijen/calibrate/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/kaijen/calibrate/compare/v0.4.3...v0.5.0
