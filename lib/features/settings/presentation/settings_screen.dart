@@ -73,16 +73,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       return;
     }
 
-    final selectedCategory = await showDialog<_CategoryChoice>(
+    final availableTags = all
+        .expand((v) => v.tagList)
+        .toSet()
+        .toList()
+      ..sort();
+
+    final choice = await showDialog<_ExportChoice>(
       context: context,
-      builder: (ctx) => _SharingFilterDialog(total: all.length),
+      builder: (ctx) =>
+          _SharingFilterDialog(total: all.length, availableTags: availableTags),
     );
-    if (selectedCategory == null || !mounted) return;
+    if (choice == null || !mounted) return;
 
     setState(() => _sharingExportLoading = true);
     try {
       final data = await db.exportForSharing(
-        category: selectedCategory.value,
+        category: choice.category,
+        tags: choice.tags.isEmpty ? null : choice.tags,
       );
       final jsonString = const JsonEncoder.withIndent('  ').convert(data);
 
@@ -290,60 +298,94 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-class _CategoryChoice {
-  final String? value; // null = alle
-  const _CategoryChoice(this.value);
+class _ExportChoice {
+  final String? category; // null = alle
+  final List<String> tags; // leer = alle
+  const _ExportChoice({this.category, this.tags = const []});
 }
 
 class _SharingFilterDialog extends StatefulWidget {
   final int total;
-  const _SharingFilterDialog({required this.total});
+  final List<String> availableTags;
+  const _SharingFilterDialog(
+      {required this.total, required this.availableTags});
 
   @override
   State<_SharingFilterDialog> createState() => _SharingFilterDialogState();
 }
 
 class _SharingFilterDialogState extends State<_SharingFilterDialog> {
-  String? _category; // null = alle
+  String? _category;
+  final Set<String> _selectedTags = {};
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Aufgaben teilen'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${widget.total} aufgelöste Vorhersagen verfügbar.\n'
-            'Eigene Schätzungen werden nicht exportiert.',
-          ),
-          const SizedBox(height: 16),
-          const Text('Kategorie'),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: const Text('Alle'),
-                selected: _category == null,
-                onSelected: (_) => setState(() => _category = null),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${widget.total} aufgelöste Vorhersagen verfügbar.\n'
+              'Eigene Schätzungen werden nicht exportiert.',
+            ),
+            const SizedBox(height: 16),
+            const Text('Kategorie'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('Alle'),
+                  selected: _category == null,
+                  onSelected: (_) => setState(() => _category = null),
+                ),
+                ChoiceChip(
+                  label: const Text('Epistemisch'),
+                  selected: _category == 'epistemic',
+                  onSelected: (_) =>
+                      setState(() => _category = 'epistemic'),
+                ),
+                ChoiceChip(
+                  label: const Text('Aleatorisch'),
+                  selected: _category == 'aleatory',
+                  onSelected: (_) =>
+                      setState(() => _category = 'aleatory'),
+                ),
+              ],
+            ),
+            if (widget.availableTags.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Text('Tags'),
+              const SizedBox(height: 4),
+              const Text(
+                'Kein Tag gewählt = alle Tags',
+                style: TextStyle(fontSize: 12),
               ),
-              ChoiceChip(
-                label: const Text('Epistemisch'),
-                selected: _category == 'epistemic',
-                onSelected: (_) =>
-                    setState(() => _category = 'epistemic'),
-              ),
-              ChoiceChip(
-                label: const Text('Aleatorisch'),
-                selected: _category == 'aleatory',
-                onSelected: (_) =>
-                    setState(() => _category = 'aleatory'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: widget.availableTags.map((tag) {
+                  final selected = _selectedTags.contains(tag);
+                  return FilterChip(
+                    label: Text(tag),
+                    selected: selected,
+                    onSelected: (v) => setState(() {
+                      if (v) {
+                        _selectedTags.add(tag);
+                      } else {
+                        _selectedTags.remove(tag);
+                      }
+                    }),
+                  );
+                }).toList(),
               ),
             ],
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -351,8 +393,12 @@ class _SharingFilterDialogState extends State<_SharingFilterDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: () =>
-              Navigator.of(context).pop(_CategoryChoice(_category)),
+          onPressed: () => Navigator.of(context).pop(
+            _ExportChoice(
+              category: _category,
+              tags: _selectedTags.toList(),
+            ),
+          ),
           child: const Text('Exportieren'),
         ),
       ],

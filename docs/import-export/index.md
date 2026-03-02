@@ -33,7 +33,8 @@ Ablauf:
 
 1. **Einstellungen → Aufgaben teilen** antippen.
 2. Im Dialog optional eine Kategorie wählen (Alle / Epistemisch / Aleatorisch).
-3. **Exportieren** bestätigen – die Datei wird per Share-Sheet geteilt.
+3. Optional einen oder mehrere Tags wählen – es werden nur Fragen exportiert, die mindestens einen der gewählten Tags tragen. Kein Tag gewählt bedeutet: alle Tags.
+4. **Exportieren** bestätigen – die Datei wird per Share-Sheet geteilt.
 
 Die exportierte Datei enthält die Auflösungen obfuskiert. Calibrate zeigt beim Empfänger „Lösung vorhanden" und löst die Vorhersage nach der Schätzung automatisch auf.
 

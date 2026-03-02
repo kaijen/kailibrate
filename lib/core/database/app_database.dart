@@ -198,11 +198,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<PredictionView>> getResolvedPredictionViews(
-      {String? category}) async {
+      {String? category, List<String>? tags}) async {
     final all = await getAllPredictionViews();
     return all.where((v) {
       if (v.status != PredictionStatus.resolved) return false;
       if (category != null && v.question.category != category) return false;
+      if (tags != null && tags.isNotEmpty) {
+        if (!tags.any((t) => v.tagList.contains(t))) return false;
+      }
       return true;
     }).toList();
   }
@@ -221,8 +224,9 @@ class AppDatabase extends _$AppDatabase {
   // --- Export ---
 
   /// Exportiert aufgelöste Vorhersagen ohne eigene Schätzungen – zum Weitergeben.
-  Future<Map<String, dynamic>> exportForSharing({String? category}) async {
-    final views = await getResolvedPredictionViews(category: category);
+  Future<Map<String, dynamic>> exportForSharing(
+      {String? category, List<String>? tags}) async {
+    final views = await getResolvedPredictionViews(category: category, tags: tags);
     final result = <Map<String, dynamic>>[];
     for (final v in views) {
       final q = v.question;
