@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-03-02
+
+### Added
+- Brier Score and Log Loss history charts on the statistics screen;
+  each chart shows the cumulative average after every resolved
+  estimate, sorted chronologically, with a dashed coin-flip reference
+  line (0.25 / ln 2) and a segmented button to limit the view to the
+  last 25, 50, or 100 estimates
+
 ## [0.15.6] - 2026-03-02
 
 ### Fixed
@@ -258,7 +267,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.15.6...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/kaijen/calibrate/compare/v0.15.6...v0.16.0
 [0.15.6]: https://github.com/kaijen/calibrate/compare/v0.15.5...v0.15.6
 [0.15.5]: https://github.com/kaijen/calibrate/compare/v0.15.4...v0.15.5
 [0.15.4]: https://github.com/kaijen/calibrate/compare/v0.15.3...v0.15.4
