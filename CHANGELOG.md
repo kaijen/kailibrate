@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.5] - 2026-03-02
+
+### Fixed
+- Feedback sheet after estimating a pre-resolved question now displays
+  resolution notes and the numeric outcome stored with the import (#24)
+
 ## [0.15.4] - 2026-03-02
 
 ### Fixed
@@ -245,7 +251,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.15.4...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.15.5...HEAD
+[0.15.5]: https://github.com/kaijen/calibrate/compare/v0.15.4...v0.15.5
 [0.15.4]: https://github.com/kaijen/calibrate/compare/v0.15.3...v0.15.4
 [0.15.3]: https://github.com/kaijen/calibrate/compare/v0.15.2...v0.15.3
 [0.15.2]: https://github.com/kaijen/calibrate/compare/v0.15.1...v0.15.2
