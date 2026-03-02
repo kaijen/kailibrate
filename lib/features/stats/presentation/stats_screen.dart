@@ -16,7 +16,6 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   String? _category;
   final Set<String> _types = {};
   final Set<String> _tags = {};
-  int _autocompleteKey = 0;
 
   List<PredictionView> _filter(List<PredictionView> all) {
     return all.where((p) {
@@ -56,15 +55,11 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                 selectedTypes: _types,
                 selectedTags: _tags,
                 availableTags: allTags,
-                autocompleteKey: _autocompleteKey,
                 onCategoryChanged: (c) => setState(() => _category = c),
                 onTypeToggled: (t) => setState(() =>
                     _types.contains(t) ? _types.remove(t) : _types.add(t)),
-                onTagAdded: (tag) => setState(() {
-                  _tags.add(tag);
-                  _autocompleteKey++;
-                }),
-                onTagRemoved: (tag) => setState(() => _tags.remove(tag)),
+                onTagToggled: (tag) => setState(() =>
+                    _tags.contains(tag) ? _tags.remove(tag) : _tags.add(tag)),
               ),
               const Divider(height: 1),
               Expanded(child: _StatsView(predictions: filtered)),
@@ -81,22 +76,18 @@ class _FilterPanel extends StatelessWidget {
   final Set<String> selectedTypes;
   final Set<String> selectedTags;
   final Set<String> availableTags;
-  final int autocompleteKey;
   final ValueChanged<String?> onCategoryChanged;
   final ValueChanged<String> onTypeToggled;
-  final ValueChanged<String> onTagAdded;
-  final ValueChanged<String> onTagRemoved;
+  final ValueChanged<String> onTagToggled;
 
   const _FilterPanel({
     required this.category,
     required this.selectedTypes,
     required this.selectedTags,
     required this.availableTags,
-    required this.autocompleteKey,
     required this.onCategoryChanged,
     required this.onTypeToggled,
-    required this.onTagAdded,
-    required this.onTagRemoved,
+    required this.onTagToggled,
   });
 
   static const _typeLabels = {
@@ -107,7 +98,7 @@ class _FilterPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unselectedTags = availableTags.difference(selectedTags);
+    final sortedTags = availableTags.toList()..sort();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -145,45 +136,25 @@ class _FilterPanel extends StatelessWidget {
               }).toList(),
             ),
           ),
-          // Tag-Filter mit Autocomplete
-          if (availableTags.isNotEmpty) ...[
+          // Tag-Filter (multi-select, OR-verknüpft)
+          if (sortedTags.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Autocomplete<String>(
-              key: ValueKey(autocompleteKey),
-              optionsBuilder: (value) {
-                if (value.text.isEmpty) return const [];
-                return unselectedTags.where((tag) =>
-                    tag.toLowerCase().contains(value.text.toLowerCase()));
-              },
-              fieldViewBuilder: (context, controller, focusNode, _) =>
-                  TextField(
-                controller: controller,
-                focusNode: focusNode,
-                decoration: const InputDecoration(
-                  hintText: 'Tag filtern…',
-                  isDense: true,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label_outline, size: 18),
-                ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: sortedTags.map((tag) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: FilterChip(
+                      label: Text(tag),
+                      selected: selectedTags.contains(tag),
+                      onSelected: (_) => onTagToggled(tag),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  );
+                }).toList(),
               ),
-              onSelected: onTagAdded,
             ),
-            if (selectedTags.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 4,
-                runSpacing: 0,
-                children: selectedTags
-                    .map((tag) => InputChip(
-                          label: Text(tag),
-                          onDeleted: () => onTagRemoved(tag),
-                          visualDensity: VisualDensity.compact,
-                        ))
-                    .toList(),
-              ),
-            ],
           ],
         ],
       ),
