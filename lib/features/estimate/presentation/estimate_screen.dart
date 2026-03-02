@@ -179,7 +179,23 @@ class _EstimateBody extends ConsumerWidget {
 
     final resolution = await db.getResolutionForQuestion(question.id);
     if (resolution != null && context.mounted) {
-      await _showFeedback(context, db, resolution, probability);
+      // Für Intervall-Typ: Outcome anhand der neuen Grenzen + gespeichertem
+      // Messwert neu berechnen, da die ursprüngliche Auflösung andere Grenzen
+      // hatte.
+      bool effectiveOutcome = resolution.outcome;
+      if (question.predictionType == 'interval' &&
+          resolution.numericOutcome != null) {
+        final lower = lowerBound.value;
+        final upper = upperBound.value;
+        if (lower != null && upper != null) {
+          final actual = resolution.numericOutcome!;
+          effectiveOutcome = actual >= lower && actual <= upper;
+          if (effectiveOutcome != resolution.outcome) {
+            await db.updateResolutionOutcome(question.id, effectiveOutcome);
+          }
+        }
+      }
+      await _showFeedback(context, db, effectiveOutcome, probability);
       if (context.mounted) context.pop();
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -192,7 +208,7 @@ class _EstimateBody extends ConsumerWidget {
   Future<void> _showFeedback(
     BuildContext context,
     AppDatabase db,
-    Resolution resolution,
+    bool outcome,
     double probability,
   ) async {
     final allViews = await db.getAllPredictionViews();
@@ -223,7 +239,7 @@ class _EstimateBody extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       builder: (_) => CalibrationFeedbackSheet(
-        outcome: resolution.outcome,
+        outcome: outcome,
         estimate: estimate,
         predictionType: type,
         overallStats: overallStats,

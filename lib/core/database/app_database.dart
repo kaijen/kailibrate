@@ -161,6 +161,10 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertResolution(ResolutionsCompanion r) =>
       into(resolutions).insert(r);
 
+  Future<void> updateResolutionOutcome(int questionId, bool outcome) =>
+      (update(resolutions)..where((r) => r.questionId.equals(questionId)))
+          .write(ResolutionsCompanion(outcome: Value(outcome)));
+
   Future<List<Resolution>> getAllResolutions() => select(resolutions).get();
 
   // --- ImportBatches ---
