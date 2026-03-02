@@ -15,6 +15,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _exportLoading = false;
+  bool _sharingExportLoading = false;
 
   Future<void> _export() async {
     setState(() => _exportLoading = true);
@@ -46,6 +47,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => _exportLoading = false);
+    }
+  }
+
+  Future<void> _exportForSharing() async {
+    final db = ref.read(appDatabaseProvider);
+    final all = await db.getResolvedPredictionViews();
+    if (!mounted) return;
+
+    if (all.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keine aufgelösten Vorhersagen vorhanden.')),
+      );
+      return;
+    }
+
+    final selectedCategory = await showDialog<_CategoryChoice>(
+      context: context,
+      builder: (ctx) => _SharingFilterDialog(total: all.length),
+    );
+    if (selectedCategory == null || !mounted) return;
+
+    setState(() => _sharingExportLoading = true);
+    try {
+      final data = await db.exportForSharing(
+        category: selectedCategory.value,
+      );
+      final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+
+      final now = DateTime.now();
+      final date =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+      final filename = 'calibrate_aufgaben_$date.json';
+
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            utf8.encode(jsonString),
+            name: filename,
+            mimeType: 'application/json',
+          ),
+        ],
+        subject: 'Calibrate-Aufgaben',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharingExportLoading = false);
     }
   }
 
@@ -127,6 +179,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : null,
             onTap: _exportLoading ? null : _export,
           ),
+          ListTile(
+            leading: const Icon(Icons.share),
+            title: const Text('Aufgaben teilen'),
+            subtitle: const Text(
+                'Aufgelöste Fragen ohne eigene Schätzungen exportieren'),
+            trailing: _sharingExportLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+            onTap: _sharingExportLoading ? null : _exportForSharing,
+          ),
           const Divider(),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -160,6 +226,76 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CategoryChoice {
+  final String? value; // null = alle
+  const _CategoryChoice(this.value);
+}
+
+class _SharingFilterDialog extends StatefulWidget {
+  final int total;
+  const _SharingFilterDialog({required this.total});
+
+  @override
+  State<_SharingFilterDialog> createState() => _SharingFilterDialogState();
+}
+
+class _SharingFilterDialogState extends State<_SharingFilterDialog> {
+  String? _category; // null = alle
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Aufgaben teilen'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${widget.total} aufgelöste Vorhersagen verfügbar.\n'
+            'Eigene Schätzungen werden nicht exportiert.',
+          ),
+          const SizedBox(height: 16),
+          const Text('Kategorie'),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('Alle'),
+                selected: _category == null,
+                onSelected: (_) => setState(() => _category = null),
+              ),
+              ChoiceChip(
+                label: const Text('Epistemisch'),
+                selected: _category == 'epistemic',
+                onSelected: (_) =>
+                    setState(() => _category = 'epistemic'),
+              ),
+              ChoiceChip(
+                label: const Text('Aleatorisch'),
+                selected: _category == 'aleatory',
+                onSelected: (_) =>
+                    setState(() => _category = 'aleatory'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: () =>
+              Navigator.of(context).pop(_CategoryChoice(_category)),
+          child: const Text('Exportieren'),
+        ),
+      ],
     );
   }
 }

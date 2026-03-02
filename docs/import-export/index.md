@@ -21,10 +21,20 @@ Fehler bei ungültigem Schema führen zu einem Fehlerdialog mit Zeilennummer. Es
 
 ## Export
 
-Der App-eigene Export erzeugt ein vollständiges JSON-Backup aller Vorhersagen, Schätzungen und Auflösungen. Das Backup wird per Android-Share-Sheet geteilt.
+### Datensicherung
 
-Auflösungen sind im Export mit ROT13 + Base64 obfuskiert. Damit enthält eine geteilte Datei keine Spoiler, wenn man einen Fragenkatalog weitergibt.
+**Einstellungen → Daten exportieren** erzeugt ein vollständiges JSON-Backup aller Vorhersagen, Schätzungen und Auflösungen. Das Backup wird per Android-Share-Sheet geteilt und lässt sich auf einem anderen Gerät vollständig wiederherstellen.
 
-Das Export-Format (Version 2) ist importkompatibel – ein Backup lässt sich auf einem anderen Gerät vollständig wiederherstellen.
+### Aufgaben teilen
+
+**Einstellungen → Aufgaben teilen** exportiert aufgelöste Vorhersagen, aber ohne die eigenen Schätzungen. So können andere dieselben Fragen selbst kalibrieren, ohne die eigenen Einschätzungen zu sehen.
+
+Ablauf:
+
+1. **Einstellungen → Aufgaben teilen** antippen.
+2. Im Dialog optional eine Kategorie wählen (Alle / Epistemisch / Aleatorisch).
+3. **Exportieren** bestätigen – die Datei wird per Share-Sheet geteilt.
+
+Die exportierte Datei enthält die Auflösungen obfuskiert. Calibrate zeigt beim Empfänger „Lösung vorhanden" und löst die Vorhersage nach der Schätzung automatisch auf.
 
 Mehr zum Format unter [Format-Referenz](format.md).

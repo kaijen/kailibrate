@@ -15,6 +15,7 @@ Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht beha
 - **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve; filterbar nach Kategorie, Schätzungstyp und Tags
 - **Nach Tags filtern** – horizontaler FilterChip-Streifen in der Vorhersagenliste
 - **Daten exportieren** – vollständiges JSON-Backup per Android-Share-Sheet; Auflösungen werden obfuskiert, damit geteilte Dateien keine Spoiler enthalten
+- **Aufgaben teilen** – aufgelöste Vorhersagen ohne eigene Schätzungen exportieren, damit andere dieselben Fragen kalibrieren können; optional nach Kategorie gefiltert
 - **Import mit Auflösungen** – Fragenkataloge können Schätzungen und Auflösungen enthalten; bereits aufgelöste Fragen werden sofort korrekt markiert
 
 Zwei Kategorien:

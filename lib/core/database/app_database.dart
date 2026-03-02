@@ -220,6 +220,36 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Export ---
 
+  /// Exportiert aufgelöste Vorhersagen ohne eigene Schätzungen – zum Weitergeben.
+  Future<Map<String, dynamic>> exportForSharing({String? category}) async {
+    final views = await getResolvedPredictionViews(category: category);
+    final result = <Map<String, dynamic>>[];
+    for (final v in views) {
+      final q = v.question;
+      result.add({
+        'text': q.questionText,
+        'category': q.category,
+        if (q.predictionType != 'probability')
+          'predictionType': q.predictionType,
+        'tags': jsonDecode(q.tags),
+        if (q.deadline != null) 'deadline': q.deadline!.toIso8601String(),
+        'hasKnownAnswer': q.hasKnownAnswer,
+        if (q.knownAnswer != null) 'knownAnswer': q.knownAnswer,
+        'resolution': _obfuscateResolution({
+          'outcome': v.resolution!.outcome,
+          if (v.resolution!.numericOutcome != null)
+            'numericOutcome': v.resolution!.numericOutcome,
+          if (v.resolution!.notes != null) 'notes': v.resolution!.notes,
+        }),
+      });
+    }
+    return {
+      'version': 2,
+      'exportedAt': DateTime.now().toIso8601String(),
+      'questions': result,
+    };
+  }
+
   Future<Map<String, dynamic>> exportAll() async {
     final qs = await getAllQuestions();
     final result = <Map<String, dynamic>>[];
