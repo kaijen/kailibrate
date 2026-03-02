@@ -51,4 +51,12 @@ Abweichungen nach oben bedeuten Unterschätzung (zu bescheiden), nach unten Übe
 | Häufigkeitshistogramm | Wie oft welche Wahrscheinlichkeit vergeben wurde |
 | Brier/Log-Loss-Verlauf | Rollender Durchschnitt über Zeit |
 
-Die Statistiken lassen sich nach Kategorie (`epistemic` / `aleatory`) filtern.
+Die Statistiken lassen sich mit drei kombinierbaren Filtern eingrenzen:
+
+| Filter | Optionen |
+|--------|----------|
+| Kategorie | Alle · Epistemisch · Aleatorisch (Einfachauswahl) |
+| Schätzungstyp | Wahrscheinlichkeit · Ja/Nein · Intervall (Mehrfachauswahl) |
+| Tags | Autocomplete aus vorhandenen Tags, OR-verknüpft |
+
+Alle drei Filter wirken gleichzeitig: Nur Vorhersagen, die allen aktiven Kriterien entsprechen, fließen in die Berechnung ein.

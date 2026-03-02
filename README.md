@@ -12,7 +12,7 @@ Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht beha
 - **Wahrscheinlichkeit schätzen** – direkt beim Erfassen oder nachträglich; drei Eingabeformen: Slider, Ja/Nein mit Konfidenz, Intervall
 - **Ergebnis auflösen** – nach Eintreten oder Nicht-Eintreten des Ereignisses
 - **Detail-Ansicht** – Tippen auf eine aufgelöste Vorhersage zeigt Schätzung, Ergebnis und Notizen
-- **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve
+- **Statistiken auswerten** – Brier Score, Log Loss, Kalibrierungskurve; filterbar nach Kategorie, Schätzungstyp und Tags
 - **Nach Tags filtern** – horizontaler FilterChip-Streifen in der Vorhersagenliste
 - **Daten exportieren** – vollständiges JSON-Backup per Android-Share-Sheet; Auflösungen werden obfuskiert, damit geteilte Dateien keine Spoiler enthalten
 - **Import mit Auflösungen** – Fragenkataloge können Schätzungen und Auflösungen enthalten; bereits aufgelöste Fragen werden sofort korrekt markiert
