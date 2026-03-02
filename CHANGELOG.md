@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.6] - 2026-03-02
+
+### Fixed
+- Interval bounds and numeric outcomes now display as integers when
+  the stored value has no fractional part (e.g. "45 km" instead of
+  "45.0 km"); unit is also shown in the feedback sheet's outcome row
+
 ## [0.15.5] - 2026-03-02
 
 ### Fixed
@@ -251,7 +258,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.15.5...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.15.6...HEAD
+[0.15.6]: https://github.com/kaijen/calibrate/compare/v0.15.5...v0.15.6
 [0.15.5]: https://github.com/kaijen/calibrate/compare/v0.15.4...v0.15.5
 [0.15.4]: https://github.com/kaijen/calibrate/compare/v0.15.3...v0.15.4
 [0.15.3]: https://github.com/kaijen/calibrate/compare/v0.15.2...v0.15.3
