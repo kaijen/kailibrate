@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-02
+
+### Added
+- Export resolved questions for others without own estimates;
+  optional category filter (epistemic/aleatory) (#8)
+- Version tile in Settings shows build number and share icon
+  for JSON debug info (OS, device model, API level) (#11)
+
 ## [0.8.0] - 2026-03-02
 
 ### Added
@@ -141,7 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kaijen/calibrate/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kaijen/calibrate/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/kaijen/calibrate/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/kaijen/calibrate/compare/v0.6.0...v0.7.0
