@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0-beta.1] - 2026-03-03
+
+### Added
+- Generate epistemic quiz questions via OpenRouter AI; supports
+  custom prompt templates (editable and deletable) and a
+  configurable question count (5 / 10 / 15 / 20)
+- API key for OpenRouter stored securely via flutter_secure_storage;
+  configurable in Settings
+- Preview screen before import: category, source, question count,
+  first 5 questions with resolution indicators
+- Share generated catalog as obfuscated v2 JSON directly from the
+  preview screen, without importing first
+- `ImportParser.obfuscateResolution()` as public static method for
+  encoding resolutions outside the database layer
+
 ## [0.18.2] - 2026-03-03
 
 ### Fixed
@@ -339,7 +354,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.18.2...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.20.0-beta.1...HEAD
+[0.20.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.20.0-beta.1
 [0.18.2]: https://github.com/kaijen/kailibrate/compare/v0.18.1...v0.18.2
 [0.18.1]: https://github.com/kaijen/kailibrate/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/kaijen/kailibrate/compare/v0.17.4...v0.18.0
