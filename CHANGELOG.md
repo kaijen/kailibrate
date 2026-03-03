@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0-beta.1] - 2026-03-03
+
+### Added
+- Configurable model list in Settings: add/remove OpenRouter models,
+  first entry used as default (#34)
+- Model dropdown in AI generator form, pre-filled with the first
+  configured model; selection persists per session (#34)
+- Binary confidence slider now spans 50–99 % (50 % = maximum
+  uncertainty / guessing); below 50 % the answer direction should
+  be flipped instead (#33)
+
+### Fixed
+- "Einstellungen" button in the missing-API-key card now navigates
+  correctly with go_router (`context.push` instead of
+  `Navigator.pushNamed`) (#31)
+- Import preview in AI generator no longer reveals correct/incorrect
+  icons for questions with embedded resolutions (#32)
+
 ## [0.20.0-beta.1] - 2026-03-03
 
 ### Added
@@ -354,7 +372,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.20.0-beta.1...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.21.0-beta.1...HEAD
+[0.21.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.20.0-beta.1...v0.21.0-beta.1
 [0.20.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.20.0-beta.1
 [0.18.2]: https://github.com/kaijen/kailibrate/compare/v0.18.1...v0.18.2
 [0.18.1]: https://github.com/kaijen/kailibrate/compare/v0.18.0...v0.18.1
