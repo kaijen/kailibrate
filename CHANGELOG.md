@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.3] - 2026-03-03
+
+### Fixed
+- Unit field in v2 interval imports now read from question level as
+  fallback when absent from the estimate sub-object; data from
+  callibrate-gen and similar tools was silently dropped (#28)
+- `exportForSharing` now includes `unit` for interval predictions so
+  the unit survives re-import (#28)
+
 ## [0.17.2] - 2026-03-03
 
 ### Fixed
@@ -294,7 +303,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.17.2...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.17.3...HEAD
+[0.17.3]: https://github.com/kaijen/calibrate/compare/v0.17.2...v0.17.3
 [0.17.2]: https://github.com/kaijen/calibrate/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/kaijen/calibrate/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/kaijen/calibrate/compare/v0.16.1...v0.17.0
