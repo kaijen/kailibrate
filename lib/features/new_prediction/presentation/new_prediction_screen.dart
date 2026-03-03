@@ -102,6 +102,11 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
     final tags = _parsedTags;
 
     try {
+      final unitForQuestion = _predictionType == 'interval'
+          ? drift.Value(_unitController.text.trim().isEmpty
+              ? null
+              : _unitController.text.trim())
+          : const drift.Value<String?>(null);
       final id = await db.insertQuestion(
         QuestionsCompanion.insert(
           questionText: _textController.text.trim(),
@@ -109,6 +114,7 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
           tags: drift.Value(jsonEncode(tags)),
           deadline: drift.Value(_deadline),
           predictionType: drift.Value(_predictionType),
+          unit: unitForQuestion,
         ),
       );
 

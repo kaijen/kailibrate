@@ -226,6 +226,7 @@ class ImportScreen extends ConsumerWidget {
               knownAnswer: drift.Value(q.answer),
               deadline: drift.Value(q.deadline),
               predictionType: drift.Value(q.predictionType),
+              unit: drift.Value(q.unit),
             ),
           );
 

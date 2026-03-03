@@ -25,6 +25,8 @@ class Questions extends Table {
   TextColumn get predictionType =>
       text().withDefault(const Constant('probability'))();
   // 'probability' | 'binary' | 'interval'
+  // v3: Einheit für interval-Typ (z. B. "m", "°C")
+  TextColumn get unit => text().nullable()();
 }
 
 class Estimates extends Table {
@@ -105,7 +107,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -118,6 +120,9 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(estimates, estimates.confidenceLevel);
             await m.addColumn(estimates, estimates.binaryChoice);
             await m.addColumn(resolutions, resolutions.numericOutcome);
+          }
+          if (from < 3) {
+            await m.addColumn(questions, questions.unit);
           }
         },
       );
@@ -244,6 +249,9 @@ class AppDatabase extends _$AppDatabase {
     final result = <Map<String, dynamic>>[];
     for (final v in views) {
       final q = v.question;
+      final effectiveUnit = q.predictionType == 'interval'
+          ? (q.unit ?? v.estimate?.unit)
+          : null;
       result.add({
         'text': q.questionText,
         'category': q.category,
@@ -253,10 +261,7 @@ class AppDatabase extends _$AppDatabase {
         if (q.deadline != null) 'deadline': q.deadline!.toIso8601String(),
         'hasKnownAnswer': q.hasKnownAnswer,
         if (q.knownAnswer != null) 'knownAnswer': q.knownAnswer,
-        if (q.predictionType == 'interval' &&
-            v.estimate?.unit != null &&
-            v.estimate!.unit!.isNotEmpty)
-          'unit': v.estimate!.unit,
+        if (effectiveUnit != null && effectiveUnit.isNotEmpty) 'unit': effectiveUnit,
         'resolution': _obfuscateResolution({
           'outcome': v.resolution!.outcome,
           if (v.resolution!.numericOutcome != null)

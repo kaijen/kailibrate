@@ -69,8 +69,10 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
   @override
   void initState() {
     super.initState();
+    // Nur befüllen wenn keine Unit aus der Frage selbst bekannt ist
+    final knownUnit = widget.question.unit ?? widget.existingEstimate?.unit;
     _unitController = TextEditingController(
-      text: widget.existingEstimate?.unit ?? '',
+      text: knownUnit == null ? (widget.existingEstimate?.unit ?? '') : '',
     );
   }
 
@@ -90,7 +92,9 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
     final categoryLabel =
         widget.question.category == 'epistemic' ? 'Epistemisch' : 'Aleatorisch';
 
-    final unit = _unitController.text.trim();
+    // Unit aus Frage (Import/Erstellung) hat Vorrang vor manuellem Eingabefeld
+    final knownUnit = widget.question.unit ?? widget.existingEstimate?.unit;
+    final unit = knownUnit ?? _unitController.text.trim();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -129,15 +133,28 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
           ] else if (type == 'binary') ...[
             BinaryEstimateInput(state: state, notifier: notifier),
           ] else if (type == 'interval') ...[
-            TextField(
-              controller: _unitController,
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Einheit (optional)',
-                hintText: 'z.B. m, °C, kg',
-                border: OutlineInputBorder(),
+            if (knownUnit != null) ...[
+              Row(
+                children: [
+                  const Icon(Icons.straighten, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Einheit: $knownUnit',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
-            ),
+            ] else ...[
+              TextField(
+                controller: _unitController,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Einheit (optional)',
+                  hintText: 'z.B. m, °C, kg',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             IntervalEstimateInput(
               state: state,
@@ -205,7 +222,8 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
       final upper = double.parse(state.upperBoundText.replaceAll(',', '.'));
       lowerBound = drift.Value(lower);
       upperBound = drift.Value(upper);
-      final unitText = _unitController.text.trim();
+      final unitText =
+          widget.question.unit ?? widget.existingEstimate?.unit ?? _unitController.text.trim();
       if (unitText.isNotEmpty) unit = drift.Value(unitText);
     }
 
