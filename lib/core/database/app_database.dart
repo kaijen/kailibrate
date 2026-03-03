@@ -253,6 +253,10 @@ class AppDatabase extends _$AppDatabase {
         if (q.deadline != null) 'deadline': q.deadline!.toIso8601String(),
         'hasKnownAnswer': q.hasKnownAnswer,
         if (q.knownAnswer != null) 'knownAnswer': q.knownAnswer,
+        if (q.predictionType == 'interval' &&
+            v.estimate?.unit != null &&
+            v.estimate!.unit!.isNotEmpty)
+          'unit': v.estimate!.unit,
         'resolution': _obfuscateResolution({
           'outcome': v.resolution!.outcome,
           if (v.resolution!.numericOutcome != null)

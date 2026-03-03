@@ -239,6 +239,8 @@ class ImportParser {
           upperBound = (est['upperBound'] as num?)?.toDouble();
           unit = est['unit'] as String?;
         }
+        // Fallback: unit auch auf Fragenebene akzeptieren
+        unit ??= qMap['unit'] as String?;
       } else {
         questionCategory = null;
         answer = qMap['answer'] as bool?;
