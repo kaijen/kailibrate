@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0-beta.2] - 2026-03-03
+
+### Added
+- Default prompt templates can now be deleted; they are hidden via
+  a per-device suppression list and remain recoverable from source
+  code (#34)
+
 ## [0.21.0-beta.1] - 2026-03-03
 
 ### Added
@@ -372,7 +379,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.21.0-beta.1...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.21.0-beta.2...HEAD
+[0.21.0-beta.2]: https://github.com/kaijen/kailibrate/compare/v0.21.0-beta.1...v0.21.0-beta.2
 [0.21.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.20.0-beta.1...v0.21.0-beta.1
 [0.20.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.20.0-beta.1
 [0.18.2]: https://github.com/kaijen/kailibrate/compare/v0.18.1...v0.18.2
