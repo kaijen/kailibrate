@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.4] - 2026-03-03
+
+### Fixed
+- Interval unit (e.g. "Liter", "km") is now stored in the Questions
+  table (schema v3) instead of only in Estimates; previously the unit
+  was lost for imported questions without bounds, causing the estimate
+  screen to ask for it again
+- Estimate screen shows a read-only label instead of an editable text
+  field when the unit is already known from the question or an
+  existing estimate
+
 ## [0.17.3] - 2026-03-03
 
 ### Fixed
@@ -303,7 +314,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.17.3...HEAD
+[Unreleased]: https://github.com/kaijen/calibrate/compare/v0.17.4...HEAD
+[0.17.4]: https://github.com/kaijen/calibrate/compare/v0.17.3...v0.17.4
 [0.17.3]: https://github.com/kaijen/calibrate/compare/v0.17.2...v0.17.3
 [0.17.2]: https://github.com/kaijen/calibrate/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/kaijen/calibrate/compare/v0.17.0...v0.17.1
