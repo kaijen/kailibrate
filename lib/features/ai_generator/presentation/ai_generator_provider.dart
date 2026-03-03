@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/api_key_service.dart';
 import '../../../core/services/openrouter_service.dart';
@@ -9,6 +10,7 @@ enum AiGeneratorPhase { form, loading, preview, imported }
 class AiGeneratorState {
   final AiGeneratorPhase phase;
   final PromptTemplate? selectedTemplate;
+  final String? selectedModel;
   final int count;
   final ImportFile? result;
   final String? errorMessage;
@@ -16,6 +18,7 @@ class AiGeneratorState {
   const AiGeneratorState({
     this.phase = AiGeneratorPhase.form,
     this.selectedTemplate,
+    this.selectedModel,
     this.count = 10,
     this.result,
     this.errorMessage,
@@ -24,6 +27,7 @@ class AiGeneratorState {
   AiGeneratorState copyWith({
     AiGeneratorPhase? phase,
     PromptTemplate? selectedTemplate,
+    String? selectedModel,
     int? count,
     ImportFile? result,
     String? errorMessage,
@@ -33,6 +37,7 @@ class AiGeneratorState {
     return AiGeneratorState(
       phase: phase ?? this.phase,
       selectedTemplate: selectedTemplate ?? this.selectedTemplate,
+      selectedModel: selectedModel ?? this.selectedModel,
       count: count ?? this.count,
       result: clearResult ? null : (result ?? this.result),
       errorMessage:
@@ -48,6 +53,10 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
     state = state.copyWith(selectedTemplate: template, clearError: true);
   }
 
+  void setModel(String model) {
+    state = state.copyWith(selectedModel: model);
+  }
+
   void setCount(int count) {
     state = state.copyWith(count: count);
   }
@@ -55,6 +64,7 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
   void reset() {
     state = AiGeneratorState(
       selectedTemplate: state.selectedTemplate,
+      selectedModel: state.selectedModel,
       count: state.count,
     );
   }
@@ -62,6 +72,9 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
   Future<void> generate(String topic) async {
     if (state.selectedTemplate == null) return;
     if (topic.trim().isEmpty) return;
+
+    final model = state.selectedModel;
+    if (model == null) return;
 
     state = state.copyWith(
       phase: AiGeneratorPhase.loading,
@@ -79,9 +92,6 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
         return;
       }
 
-      final model = await ApiKeyService.getModel() ??
-          'google/gemma-3-12b-it:free';
-
       final prompt = state.selectedTemplate!.body
           .replaceAll('{topic}', topic.trim())
           .replaceAll('{count}', '${state.count}');
@@ -91,6 +101,8 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
         model: model,
         prompt: prompt,
       );
+
+      debugPrint('[AI] raw response:\n$responseText');
 
       final importFile = ImportParser.parseAutoDetect(responseText);
 
@@ -111,12 +123,10 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
         phase: AiGeneratorPhase.form,
         errorMessage: message,
       );
-    } on ImportParseException catch (_) {
+    } on ImportParseException catch (e) {
       state = state.copyWith(
         phase: AiGeneratorPhase.form,
-        errorMessage:
-            'Antwort kein gültiges Kailibrate-JSON – '
-            'anderes Modell oder Template versuchen.',
+        errorMessage: 'Parse-Fehler: ${e.message}',
       );
     } catch (e) {
       state = state.copyWith(
@@ -139,4 +149,8 @@ final aiGeneratorProvider = StateNotifierProvider.autoDispose<
 final templatesProvider =
     FutureProvider.autoDispose<List<PromptTemplate>>((ref) {
   return PromptTemplateService.loadAll();
+});
+
+final modelListProvider = FutureProvider.autoDispose<List<String>>((ref) {
+  return ApiKeyService.getModelList();
 });

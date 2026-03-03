@@ -28,17 +28,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _apiKeyController = TextEditingController();
   bool _apiKeyObscured = true;
   bool _apiKeyLoaded = false;
-  String _selectedModel = 'google/gemma-3-12b-it:free';
-  bool _customModel = false;
-  final _customModelController = TextEditingController();
-
-  static const _knownModels = [
-    ('google/gemma-3-12b-it:free', 'Gemma 3 12B (kostenlos)'),
-    ('meta-llama/llama-3.1-8b-instruct:free', 'Llama 3.1 8B (kostenlos)'),
-    ('google/gemini-flash-1.5', 'Gemini Flash 1.5'),
-    ('anthropic/claude-haiku-3', 'Claude Haiku 3'),
-    ('mistralai/mistral-small-3.1-24b-instruct', 'Mistral Small 3.1'),
-  ];
+  List<String> _modelList = [];
 
   @override
   void initState() {
@@ -52,26 +42,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void dispose() {
     _apiKeyController.dispose();
-    _customModelController.dispose();
     super.dispose();
   }
 
   Future<void> _loadAiSettings() async {
     final key = await ApiKeyService.getKey();
-    final model = await ApiKeyService.getModel();
+    final models = await ApiKeyService.getModelList();
     if (!mounted) return;
-
-    final isKnown = model == null ||
-        _knownModels.any((m) => m.$1 == model);
 
     setState(() {
       _apiKeyController.text = key ?? '';
       _apiKeyLoaded = true;
-      if (model != null) {
-        _selectedModel = model;
-        _customModel = !isKnown;
-        if (!isKnown) _customModelController.text = model;
-      }
+      _modelList = models;
     });
   }
 
@@ -87,11 +69,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SnackBar(content: Text('API-Key gespeichert.')),
       );
     }
-  }
-
-  Future<void> _saveModel(String model) async {
-    await ApiKeyService.saveModel(model);
-    setState(() => _selectedModel = model);
   }
 
   Future<void> _export() async {
@@ -372,53 +349,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButtonFormField<String>(
-                    value: _customModel ? '__custom__' : _selectedModel,
-                    decoration: const InputDecoration(
-                      labelText: 'Modell',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: [
-                      ..._knownModels.map(
-                        (m) => DropdownMenuItem(
-                            value: m.$1, child: Text(m.$2)),
+                  const Text('Modelle',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Erstes Modell wird als Standard verwendet.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  ..._modelList.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final model = entry.value;
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: i == 0
+                          ? const Chip(
+                              label: Text('Standard',
+                                  style: TextStyle(fontSize: 11)),
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                            )
+                          : const SizedBox(width: 72),
+                      title: Text(model,
+                          style: const TextStyle(fontSize: 13),
+                          overflow: TextOverflow.ellipsis),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: 'Entfernen',
+                        onPressed: _modelList.length <= 1
+                            ? null
+                            : () async {
+                                final updated = List<String>.from(_modelList)
+                                  ..removeAt(i);
+                                await ApiKeyService.saveModelList(updated);
+                                setState(() => _modelList = updated);
+                              },
                       ),
-                      const DropdownMenuItem(
-                          value: '__custom__',
-                          child: Text('Eigenes Modell …')),
-                    ],
-                    onChanged: (v) {
-                      if (v == '__custom__') {
-                        setState(() => _customModel = true);
-                      } else if (v != null) {
-                        setState(() => _customModel = false);
-                        _saveModel(v);
+                    );
+                  }),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.add),
+                    title: const Text('Modell hinzufügen'),
+                    onTap: () async {
+                      final id = await showDialog<String>(
+                        context: context,
+                        builder: (_) => const _AddModelDialog(),
+                      );
+                      if (id != null && id.isNotEmpty) {
+                        final updated = List<String>.from(_modelList)..add(id);
+                        await ApiKeyService.saveModelList(updated);
+                        setState(() => _modelList = updated);
                       }
                     },
                   ),
-                  if (_customModel) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _customModelController,
-                            decoration: const InputDecoration(
-                              labelText: 'Modell-ID',
-                              hintText: 'provider/model-name',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        FilledButton(
-                          onPressed: () => _saveModel(
-                              _customModelController.text.trim()),
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -691,6 +675,52 @@ class _SharingFilterDialogState extends State<_SharingFilterDialog> {
             ),
           ),
           child: const Text('Exportieren'),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+class _AddModelDialog extends StatefulWidget {
+  const _AddModelDialog();
+
+  @override
+  State<_AddModelDialog> createState() => _AddModelDialogState();
+}
+
+class _AddModelDialogState extends State<_AddModelDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Modell hinzufügen'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(
+          labelText: 'Modell-ID',
+          hintText: 'provider/model-name',
+          border: OutlineInputBorder(),
+        ),
+        onSubmitted: (v) => Navigator.of(context).pop(v.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text('Hinzufügen'),
         ),
       ],
     );
