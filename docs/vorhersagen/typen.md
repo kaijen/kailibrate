@@ -14,7 +14,7 @@ Beispiel: „Schließt der DAX am 31.03.2026 über 21 000 Punkten? → 40 %"
 
 ## Ja/Nein mit Konfidenz (`binary`)
 
-Schätzung: erst Richtung wählen (Ja oder Nein), dann Konfidenz einstellen (0–100 %). Die interne Wahrscheinlichkeit ergibt sich aus `Konfidenz` (bei Ja) bzw. `1 − Konfidenz` (bei Nein).
+Schätzung: erst Richtung wählen (Ja oder Nein), dann Konfidenz einstellen (50–99 %). 50 % steht für maximale Unsicherheit (Raten); wer unter 50 % liegt, sollte einfach die Richtung umkehren. Die interne Wahrscheinlichkeit ergibt sich aus `Konfidenz` (bei Ja) bzw. `1 − Konfidenz` (bei Nein).
 
 **Geeignet für:** Fragen, bei denen man eine klare Tendenz hat und deren Stärke ausdrücken will.
 

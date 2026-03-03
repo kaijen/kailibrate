@@ -122,7 +122,8 @@ class BinaryEstimateInput extends StatelessWidget {
         ConfidenceSlider(
           value: state.confidenceLevel,
           onChanged: notifier.setConfidence,
-          label: 'Konfidenz',
+          label: 'Wie sicher bist du? (50 % = Raten)',
+          min: 0.5,
         ),
       ],
     );
@@ -239,16 +240,19 @@ class ConfidenceSlider extends StatelessWidget {
   final double value;
   final ValueChanged<double> onChanged;
   final String label;
+  final double min;
 
   const ConfidenceSlider({
     super.key,
     required this.value,
     required this.onChanged,
     required this.label,
+    this.min = 0.1,
   });
 
   @override
   Widget build(BuildContext context) {
+    final divisions = ((0.99 - min) * 100).round();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,10 +273,10 @@ class ConfidenceSlider extends StatelessWidget {
           ],
         ),
         Slider(
-          value: value,
-          min: 0.1,
+          value: value.clamp(min, 0.99),
+          min: min,
           max: 0.99,
-          divisions: 89,
+          divisions: divisions,
           label: '${(value * 100).round()} %',
           onChanged: onChanged,
         ),
