@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-04
+
+First stable release of Kailibrate. All features from the v0.20–v0.28
+beta cycle are considered production-ready. The database schema (v5),
+import/export format (v2), and public API surface are now stable;
+breaking changes will follow semver and require a major version bump.
+
 ## [0.28.0] - 2026-03-04
 
 ### Added
@@ -532,7 +539,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.28.0...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/kaijen/kailibrate/compare/v0.28.0...v1.0.0
 [0.28.0]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.28.0
 [0.28.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.27.0-beta.1...v0.28.0-beta.1
 [0.27.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.26.0-beta.1...v0.27.0-beta.1
