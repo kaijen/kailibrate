@@ -73,7 +73,7 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
       body: switch (genState.phase) {
         AiGeneratorPhase.loading => _buildLoading(),
         AiGeneratorPhase.preview => _buildPreview(context, ref, genState),
-        AiGeneratorPhase.imported => _buildImported(context),
+        AiGeneratorPhase.imported => _buildImported(context, genState),
         AiGeneratorPhase.form => _buildForm(context, ref, genState, notifier),
       },
     );
@@ -92,11 +92,44 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
     );
   }
 
-  Widget _buildImported(BuildContext context) {
+  Widget _buildImported(BuildContext context, AiGeneratorState genState) {
+    final hasCost = genState.generationCost != null ||
+        genState.generationTokens != null;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (hasCost) ...[
+            Card(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                child: Column(
+                  children: [
+                    Icon(Icons.toll,
+                        size: 36,
+                        color: Theme.of(context).colorScheme.primary),
+                    const SizedBox(height: 8),
+                    if (genState.generationCost != null)
+                      Text(
+                        '\$${genState.generationCost!.toStringAsFixed(4)}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    if (genState.generationTokens != null)
+                      Text(
+                        '${genState.generationTokens} Tokens',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
           const Icon(Icons.check_circle, color: Colors.green, size: 64),
           const SizedBox(height: 16),
           const Text('Import erfolgreich!'),

@@ -221,8 +221,27 @@ class _DetailBody extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Auflösung
-        if (resolution != null)
+        // Auflösung – nur nach eigener Schätzung zeigen
+        if (resolution != null && estimate == null)
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.lock_outline,
+                  color: Colors.grey.shade500),
+              title: Text(
+                'Lösung vorhanden',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade500,
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+              subtitle: Text(
+                'Erst schätzen, dann wird die Auflösung sichtbar.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ),
+
+        if (resolution != null && estimate != null)
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -236,7 +255,7 @@ class _DetailBody extends StatelessWidget {
                     final isBinaryCorrect =
                         (q.predictionType == 'binary' ||
                             q.predictionType == 'factual') &&
-                            estimate?.binaryChoice == resolution.outcome;
+                            estimate.binaryChoice == resolution.outcome;
                     final isPositive =
                         (q.predictionType == 'binary' ||
                             q.predictionType == 'factual')
@@ -271,7 +290,7 @@ class _DetailBody extends StatelessWidget {
                   if (resolution.numericOutcome != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Messwert: ${formatNum(resolution.numericOutcome)}${(estimate?.unit?.isNotEmpty ?? false) ? ' ${estimate!.unit}' : ''}',
+                      'Messwert: ${formatNum(resolution.numericOutcome)}${(estimate.unit?.isNotEmpty ?? false) ? ' ${estimate.unit}' : ''}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
