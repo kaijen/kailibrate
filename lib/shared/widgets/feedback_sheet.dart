@@ -90,14 +90,28 @@ class CalibrationFeedbackSheet extends StatelessWidget {
                     size: 28,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    predictionType == 'binary'
-                        ? (isCorrect ? 'Richtig' : 'Falsch')
-                        : (outcome ? 'Eingetreten' : 'Nicht eingetreten'),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: outcomeColor,
-                          fontWeight: FontWeight.bold,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        predictionType == 'binary'
+                            ? (isCorrect ? 'Richtig' : 'Falsch')
+                            : (outcome ? 'Eingetreten' : 'Nicht eingetreten'),
+                        style:
+                            Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: outcomeColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                      if (predictionType == 'binary')
+                        Text(
+                          'Antwort: ${outcome ? 'Ja' : 'Nein'}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: outcomeColor,
+                                  ),
                         ),
+                    ],
                   ),
                 ],
               ),
