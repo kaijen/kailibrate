@@ -20,6 +20,7 @@ class AiGeneratorScreen extends ConsumerStatefulWidget {
 
 class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
   final _topicController = TextEditingController();
+  final _tagsController = TextEditingController();
   bool _hasApiKey = false;
 
   @override
@@ -38,6 +39,7 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
   @override
   void dispose() {
     _topicController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -56,12 +58,12 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
       });
     });
 
-    // Auto-select first model when model list loads
-    ref.listen(modelListProvider, (_, next) {
-      next.whenData((models) {
-        if (models.isNotEmpty &&
+    // Auto-select initial model (last used or first in list)
+    ref.listen(initialModelProvider, (_, next) {
+      next.whenData((model) {
+        if (model != null &&
             ref.read(aiGeneratorProvider).selectedModel == null) {
-          notifier.setModel(models.first);
+          notifier.setModel(model);
         }
       });
     });
@@ -147,23 +149,30 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
           ref.watch(modelListProvider).when(
             loading: () => const LinearProgressIndicator(),
             error: (e, _) => Text('Fehler beim Laden der Modelle: $e'),
-            data: (models) => DropdownButtonFormField<String>(
-              value: genState.selectedModel,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              items: models
-                  .map((m) => DropdownMenuItem(
-                        value: m,
-                        child: Text(m, overflow: TextOverflow.ellipsis),
-                      ))
-                  .toList(),
-              onChanged: (m) {
-                if (m != null) notifier.setModel(m);
-              },
-            ),
+            data: (models) => models.isEmpty
+                ? Text(
+                    'Keine Modelle konfiguriert – bitte in den Einstellungen eintragen.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  )
+                : DropdownButtonFormField<String>(
+                    value: genState.selectedModel,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    items: models
+                        .map((m) => DropdownMenuItem(
+                              value: m,
+                              child: Text(m, overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                    onChanged: (m) {
+                      if (m != null) notifier.setModel(m);
+                    },
+                  ),
           ),
           const SizedBox(height: 20),
           TextField(
@@ -182,6 +191,16 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
           _CountSelector(
             selected: genState.count,
             onChanged: notifier.setCount,
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _tagsController,
+            decoration: const InputDecoration(
+              labelText: 'Tags (optional)',
+              hintText: 'z.B. history, science',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: notifier.setTags,
           ),
           const SizedBox(height: 28),
           SizedBox(
@@ -257,6 +276,13 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
                     'Mit Auflösung',
                     '${file.questions.where((q) => q.hasResolution).length}',
                   ),
+                  if (genState.generationTokens != null)
+                    _PreviewRow('Token', '${genState.generationTokens}'),
+                  if (genState.generationCost != null)
+                    _PreviewRow(
+                      'Kosten',
+                      '\$${genState.generationCost!.toStringAsFixed(6)}',
+                    ),
                 ],
               ),
             ),

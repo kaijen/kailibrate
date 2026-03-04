@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -26,9 +27,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // AI generator settings
   final _apiKeyController = TextEditingController();
-  bool _apiKeyObscured = true;
+  final _modelsController = TextEditingController();
+  bool _hasApiKey = false;
+  bool _apiKeyEditing = false;
   bool _apiKeyLoaded = false;
-  List<String> _modelList = [];
 
   @override
   void initState() {
@@ -42,18 +44,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void dispose() {
     _apiKeyController.dispose();
+    _modelsController.dispose();
     super.dispose();
   }
 
   Future<void> _loadAiSettings() async {
-    final key = await ApiKeyService.getKey();
+    final hasKey = await ApiKeyService.hasKey();
     final models = await ApiKeyService.getModelList();
     if (!mounted) return;
 
     setState(() {
-      _apiKeyController.text = key ?? '';
+      _hasApiKey = hasKey;
+      _modelsController.text = models.join('\n');
       _apiKeyLoaded = true;
-      _modelList = models;
     });
   }
 
@@ -61,12 +64,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final key = _apiKeyController.text.trim();
     if (key.isEmpty) {
       await ApiKeyService.deleteKey();
+      if (mounted) setState(() { _hasApiKey = false; _apiKeyEditing = false; });
     } else {
       await ApiKeyService.saveKey(key);
+      _apiKeyController.clear();
+      if (mounted) setState(() { _hasApiKey = true; _apiKeyEditing = false; });
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('API-Key gespeichert.')),
+      );
+    }
+  }
+
+  Future<void> _saveModels() async {
+    final lines = _modelsController.text
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    await ApiKeyService.saveModelList(lines);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Modellliste gespeichert.')),
       );
     }
   }
@@ -311,97 +331,110 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           if (_apiKeyLoaded) ...[
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _apiKeyController,
-                      obscureText: _apiKeyObscured,
-                      decoration: InputDecoration(
-                        labelText: 'OpenRouter API-Key',
-                        hintText: 'sk-or-…',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(_apiKeyObscured
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined),
-                          onPressed: () => setState(
-                              () => _apiKeyObscured = !_apiKeyObscured),
+            if (_hasApiKey && !_apiKeyEditing)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.key, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(child: Text('API-Key gespeichert  ••••••••')),
+                    TextButton(
+                      onPressed: () => setState(() => _apiKeyEditing = true),
+                      child: const Text('Ändern'),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _apiKeyController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'OpenRouter API-Key',
+                          hintText: 'sk-or-…',
+                          border: OutlineInputBorder(),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _saveApiKey,
-                    child: const Text('Speichern'),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    if (_apiKeyEditing)
+                      TextButton(
+                        onPressed: () => setState(() {
+                          _apiKeyEditing = false;
+                          _apiKeyController.clear();
+                        }),
+                        child: const Text('Abbrechen'),
+                      ),
+                    FilledButton(
+                      onPressed: _saveApiKey,
+                      child: const Text('Speichern'),
+                    ),
+                  ],
+                ),
               ),
-            ),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Modelle',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Text('Modelle',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.copy_outlined, size: 18),
+                        tooltip: 'Liste kopieren',
+                        onPressed: () {
+                          Clipboard.setData(
+                              ClipboardData(text: _modelsController.text));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('In Zwischenablage kopiert.')),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.info_outline, size: 18),
+                        tooltip: 'Verfügbare Modelle auf openrouter.ai',
+                        onPressed: () => launchUrl(
+                          Uri.parse('https://openrouter.ai/models'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
+                    ],
+                  ),
                   const Text(
-                    'Erstes Modell wird als Standard verwendet.',
+                    'Ein Modell pro Zeile. Erstes wird als Standard verwendet.',
                     style: TextStyle(fontSize: 12),
                   ),
-                  const SizedBox(height: 4),
-                  ..._modelList.asMap().entries.map((entry) {
-                    final i = entry.key;
-                    final model = entry.value;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: i == 0
-                          ? const Chip(
-                              label: Text('Standard',
-                                  style: TextStyle(fontSize: 11)),
-                              padding: EdgeInsets.zero,
-                              visualDensity: VisualDensity.compact,
-                            )
-                          : const SizedBox(width: 72),
-                      title: Text(model,
-                          style: const TextStyle(fontSize: 13),
-                          overflow: TextOverflow.ellipsis),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        tooltip: 'Entfernen',
-                        onPressed: _modelList.length <= 1
-                            ? null
-                            : () async {
-                                final updated = List<String>.from(_modelList)
-                                  ..removeAt(i);
-                                await ApiKeyService.saveModelList(updated);
-                                setState(() => _modelList = updated);
-                              },
-                      ),
-                    );
-                  }),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.add),
-                    title: const Text('Modell hinzufügen'),
-                    onTap: () async {
-                      final id = await showDialog<String>(
-                        context: context,
-                        builder: (_) => const _AddModelDialog(),
-                      );
-                      if (id != null && id.isNotEmpty) {
-                        final updated = List<String>.from(_modelList)..add(id);
-                        await ApiKeyService.saveModelList(updated);
-                        setState(() => _modelList = updated);
-                      }
-                    },
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _modelsController,
+                    maxLines: 6,
+                    decoration: const InputDecoration(
+                      hintText:
+                          'google/gemini-2.5-flash-preview\ngoogle/gemini-2.0-flash-lite-001\n…',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton(
+                      onPressed: _saveModels,
+                      child: const Text('Speichern'),
+                    ),
                   ),
                 ],
               ),
@@ -680,48 +713,3 @@ class _SharingFilterDialogState extends State<_SharingFilterDialog> {
   }
 }
 
-// ---------------------------------------------------------------------------
-
-class _AddModelDialog extends StatefulWidget {
-  const _AddModelDialog();
-
-  @override
-  State<_AddModelDialog> createState() => _AddModelDialogState();
-}
-
-class _AddModelDialogState extends State<_AddModelDialog> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Modell hinzufügen'),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        decoration: const InputDecoration(
-          labelText: 'Modell-ID',
-          hintText: 'provider/model-name',
-          border: OutlineInputBorder(),
-        ),
-        onSubmitted: (v) => Navigator.of(context).pop(v.trim()),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
-          child: const Text('Hinzufügen'),
-        ),
-      ],
-    );
-  }
-}

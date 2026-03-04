@@ -11,13 +11,26 @@ class OpenRouterException implements Exception {
   String toString() => 'OpenRouterException: $message';
 }
 
+class GenerateResult {
+  final String text;
+  final double? cost;
+  final int? totalTokens;
+
+  const GenerateResult({
+    required this.text,
+    this.cost,
+    this.totalTokens,
+  });
+}
+
 class OpenRouterService {
   static const _baseUrl = 'https://openrouter.ai/api/v1';
 
-  /// Sends the finished prompt to the model and returns the response text.
+  /// Sends the finished prompt to the model and returns the response text
+  /// along with optional usage/cost information.
   /// Throws [OpenRouterException] on 401 (invalid key), 402 (insufficient
   /// credits), network errors, or unexpected response format.
-  static Future<String> generate({
+  static Future<GenerateResult> generate({
     required String apiKey,
     required String model,
     required String prompt,
@@ -75,6 +88,10 @@ class OpenRouterService {
       throw const OpenRouterException('Antwort enthält keinen Inhalt.');
     }
 
-    return content;
+    final usage = body['usage'] as Map<String, dynamic>?;
+    final cost = (usage?['cost'] as num?)?.toDouble();
+    final totalTokens = (usage?['total_tokens'] as num?)?.toInt();
+
+    return GenerateResult(text: content, cost: cost, totalTokens: totalTokens);
   }
 }

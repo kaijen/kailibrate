@@ -105,7 +105,7 @@ Thema: [THEMA]
 Anzahl: [ANZAHL] Fragen, davon etwa die Hälfte Ja/Nein, die Hälfte Intervall.
 
 Regeln für Ja/Nein-Fragen:
-- predictionType weglassen (Standard: "probability")
+- predictionType: "binary"
 - "resolution.outcome": true oder false
 - "resolution.notes": kurze Erklärung
 
@@ -130,6 +130,18 @@ Ausgabe ausschließlich als valides JSON.
   "questions": [ ... ]
 }
 ```
+
+---
+
+## In-App-Generator
+
+Der integrierte KI-Generator (KI-Generator-Tab) erledigt Schritt 1–2 automatisch:
+Thema, Anzahl und optionale Tags eingeben, Modell wählen, generieren – fertig.
+Die erzeugten Fragen lassen sich direkt importieren oder als JSON-Datei teilen.
+
+**Tags:** Im Feld „Tags (optional)" können kommagetrennte Schlagworte vorgegeben
+werden. Der Generator verwendet dann ausschließlich diese Tags, was nützlich ist,
+wenn der importierte Katalog in Kailibrate gezielt nach Tags gefiltert werden soll.
 
 ---
 

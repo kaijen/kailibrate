@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/api_key_service.dart';
@@ -7,21 +8,29 @@ import '../../../core/utils/import_parser.dart';
 
 enum AiGeneratorPhase { form, loading, preview, imported }
 
+const _sentinel = Object();
+
 class AiGeneratorState {
   final AiGeneratorPhase phase;
   final PromptTemplate? selectedTemplate;
   final String? selectedModel;
   final int count;
+  final String tags;
   final ImportFile? result;
   final String? errorMessage;
+  final double? generationCost;
+  final int? generationTokens;
 
   const AiGeneratorState({
     this.phase = AiGeneratorPhase.form,
     this.selectedTemplate,
     this.selectedModel,
     this.count = 10,
+    this.tags = '',
     this.result,
     this.errorMessage,
+    this.generationCost,
+    this.generationTokens,
   });
 
   AiGeneratorState copyWith({
@@ -29,19 +38,29 @@ class AiGeneratorState {
     PromptTemplate? selectedTemplate,
     String? selectedModel,
     int? count,
+    String? tags,
     ImportFile? result,
     String? errorMessage,
     bool clearError = false,
     bool clearResult = false,
+    Object? generationCost = _sentinel,
+    Object? generationTokens = _sentinel,
   }) {
     return AiGeneratorState(
       phase: phase ?? this.phase,
       selectedTemplate: selectedTemplate ?? this.selectedTemplate,
       selectedModel: selectedModel ?? this.selectedModel,
       count: count ?? this.count,
+      tags: tags ?? this.tags,
       result: clearResult ? null : (result ?? this.result),
       errorMessage:
           clearError ? null : (errorMessage ?? this.errorMessage),
+      generationCost: generationCost == _sentinel
+          ? this.generationCost
+          : generationCost as double?,
+      generationTokens: generationTokens == _sentinel
+          ? this.generationTokens
+          : generationTokens as int?,
     );
   }
 }
@@ -55,10 +74,15 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
 
   void setModel(String model) {
     state = state.copyWith(selectedModel: model);
+    unawaited(ApiKeyService.saveModel(model));
   }
 
   void setCount(int count) {
     state = state.copyWith(count: count);
+  }
+
+  void setTags(String tags) {
+    state = state.copyWith(tags: tags);
   }
 
   void reset() {
@@ -66,6 +90,7 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
       selectedTemplate: state.selectedTemplate,
       selectedModel: state.selectedModel,
       count: state.count,
+      tags: state.tags,
     );
   }
 
@@ -80,6 +105,8 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
       phase: AiGeneratorPhase.loading,
       clearError: true,
       clearResult: true,
+      generationCost: null,
+      generationTokens: null,
     );
 
     try {
@@ -92,23 +119,30 @@ class AiGeneratorNotifier extends StateNotifier<AiGeneratorState> {
         return;
       }
 
-      final prompt = state.selectedTemplate!.body
+      String prompt = state.selectedTemplate!.body
           .replaceAll('{topic}', topic.trim())
           .replaceAll('{count}', '${state.count}');
 
-      final responseText = await OpenRouterService.generate(
+      final tagsStr = state.tags.trim();
+      if (tagsStr.isNotEmpty) {
+        prompt += '\n\nWichtig: Verwende ausschließlich diese Tags (keine anderen): $tagsStr';
+      }
+
+      final result = await OpenRouterService.generate(
         apiKey: apiKey,
         model: model,
         prompt: prompt,
       );
 
-      debugPrint('[AI] raw response:\n$responseText');
+      debugPrint('[AI] raw response:\n${result.text}');
 
-      final importFile = ImportParser.parseAutoDetect(responseText);
+      final importFile = ImportParser.parseAutoDetect(result.text);
 
       state = state.copyWith(
         phase: AiGeneratorPhase.preview,
         result: importFile,
+        generationCost: result.cost,
+        generationTokens: result.totalTokens,
       );
     } on OpenRouterException catch (e) {
       String message;
@@ -153,4 +187,14 @@ final templatesProvider =
 
 final modelListProvider = FutureProvider.autoDispose<List<String>>((ref) {
   return ApiKeyService.getModelList();
+});
+
+/// Resolves the model to pre-select: last used model if still in list,
+/// otherwise first model in list (or null if list is empty).
+final initialModelProvider = FutureProvider.autoDispose<String?>((ref) async {
+  final models = await ref.watch(modelListProvider.future);
+  if (models.isEmpty) return null;
+  final last = await ApiKeyService.getModel();
+  if (last != null && models.contains(last)) return last;
+  return models.first;
 });
