@@ -52,6 +52,7 @@ Anzahl: {count}
 Regeln:
 - Jede Frage ist eine Ja/Nein-Frage mit eindeutiger, verifizierbarer Antwort.
 - Schwierigkeitsgrad: gemischt – einige überraschend wahr, einige überraschend falsch.
+- predictionType ist immer "binary".
 - Kein Schätzfeld (kein "probability") – der Nutzer schätzt selbst.
 - "resolution.outcome" enthält die korrekte Antwort (true = Ja, false = Nein).
 - "resolution.notes" enthält eine kurze Erklärung oder Quelle.
@@ -67,6 +68,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
     {
       "text": "Frage?",
       "tags": ["tag1", "tag2"],
+      "predictionType": "binary",
       "resolution": {
         "outcome": true,
         "notes": "Kurze Erklärung."
@@ -123,7 +125,7 @@ Thema: {topic}
 Anzahl: {count} Fragen, davon etwa die Hälfte Ja/Nein, die Hälfte Intervall.
 
 Regeln für Ja/Nein-Fragen:
-- predictionType weglassen (Standard: "probability")
+- predictionType: "binary"
 - "resolution.outcome": true oder false
 - "resolution.notes": kurze Erklärung
 
