@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-03-04
+
+### Added
+- AI-powered question catalog generator via OpenRouter; configurable
+  prompt templates, question count (5/10/15/20), and model selection
+- API key for OpenRouter stored securely; write-only after saving (#40)
+- Preview screen before AI import with share-as-obfuscated-JSON option
+- Tags input in AI generator restricts LLM-assigned labels (#36)
+- Generation cost and token count shown after each AI run (#39, #50)
+- Configurable model list (one per line); selection persists per session
+- Aleatory AI templates for binary and interval predictions (#46)
+- `{date}` placeholder in aleatory templates for future-only deadlines
+- Warning and exclusion checkbox for past-deadline questions in preview
+- New `factual` prediction type for epistemic Wahr/Falsch questions (#43)
+- Wahr/Falsch UI in estimate, resolve, feedback, card, and detail views (#43)
+- Deadline shown on prediction cards with color-coded urgency (#48)
+- Deadline editing from detail view for open/pending predictions (#47)
+- "Überfällig" badge for overdue predictions (#47)
+- Binary confidence slider restricted to 50–99 % (#33)
+- Default prompt templates can be deleted and recovered (#34)
+
+### Changed
+- `probability` type replaced by `binary` (aleatory) and `factual`
+  (epistemic); import parser remaps legacy entries; schema migrated to v5 (#45)
+- Tapping any prediction card opens detail view; primary action via FAB (#47)
+- Mixed AI template removed in favour of focused aleatory templates (#46)
+- Docs restructured with why/what/how narrative and new concept pages
+
+### Fixed
+- Calibration scores use directional confidence for binary/factual
+  predictions; correct "99 % FALSCH" appears in 99 % bin, not 1 % (#52)
+- Resolution outcome hidden in detail view until user has estimated (#51)
+- Generation cost shown prominently on AI import success screen (#50)
+- Settings navigation in AI generator corrected (#31)
+- AI import preview no longer reveals resolution icons (#32)
+- Yes/no prompts set predictionType "binary" correctly (#35)
+- Binary feedback shows actual Ja/Nein answer below verdict (#42)
+- Binary correctness based on binaryChoice == outcome (#41)
+
 ## [0.28.0-beta.1] - 2026-03-04
 
 ### Fixed
@@ -493,7 +532,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.28.0-beta.1...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v0.28.0...HEAD
+[0.28.0]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.28.0
 [0.28.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.27.0-beta.1...v0.28.0-beta.1
 [0.27.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.26.0-beta.1...v0.27.0-beta.1
 [0.26.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.25.0-beta.1...v0.26.0-beta.1
