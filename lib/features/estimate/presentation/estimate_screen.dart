@@ -132,6 +132,8 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
             ),
           ] else if (type == 'binary') ...[
             BinaryEstimateInput(state: state, notifier: notifier),
+          ] else if (type == 'factual') ...[
+            FactualEstimateInput(state: state, notifier: notifier),
           ] else if (type == 'interval') ...[
             if (knownUnit != null) ...[
               Row(
@@ -182,6 +184,9 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
     if (type == 'binary' && state.binaryChoice == null) {
       return 'Bitte wähle Ja oder Nein.';
     }
+    if (type == 'factual' && state.binaryChoice == null) {
+      return 'Bitte wähle Wahr oder Falsch.';
+    }
     if (type == 'interval') {
       final lower = double.tryParse(state.lowerBoundText.replaceAll(',', '.'));
       final upper = double.tryParse(state.upperBoundText.replaceAll(',', '.'));
@@ -215,7 +220,7 @@ class _EstimateBodyState extends ConsumerState<_EstimateBody> {
     drift.Value<bool?> binaryChoice = const drift.Value(null);
     drift.Value<String?> unit = const drift.Value(null);
 
-    if (type == 'binary') {
+    if (type == 'binary' || type == 'factual') {
       binaryChoice = drift.Value(state.binaryChoice!);
     } else if (type == 'interval') {
       final lower = double.parse(state.lowerBoundText.replaceAll(',', '.'));

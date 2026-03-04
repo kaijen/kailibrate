@@ -11,7 +11,7 @@ Ein LLM wie Claude oder GPT-4 kann in Sekunden Dutzende Trivia-Fragen mit verste
 
 ---
 
-## Prompt: Epistemisches Trivia (Ja/Nein-Fragen)
+## Prompt: Epistemisches Trivia (Wahr/Falsch-Fragen)
 
 Geeignet für Faktfragen, bei denen eine klare richtige Antwort existiert.
 
@@ -21,10 +21,11 @@ Thema: [THEMA, z.B. "Europäische Geografie" oder "Wissenschaftsgeschichte"]
 Anzahl: [ANZAHL, z.B. 15]
 
 Regeln:
-- Jede Frage ist eine Ja/Nein-Frage mit eindeutiger, verifizierbarer Antwort.
+- Jede Frage ist eine Wahr/Falsch-Frage mit eindeutiger, verifizierbarer Antwort.
 - Schwierigkeitsgrad: gemischt – einige überraschend wahr, einige überraschend falsch.
+- predictionType ist immer "factual".
 - Kein Schätzfeld (kein "probability") – der Nutzer schätzt selbst.
-- "resolution.outcome" enthält die korrekte Antwort (true = Ja, false = Nein).
+- "resolution.outcome" enthält die korrekte Antwort (true = Wahr, false = Falsch).
 - "resolution.notes" enthält eine kurze Erklärung oder Quelle.
 - Tags: 1–3 thematische Schlagworte auf Englisch.
 
@@ -39,6 +40,7 @@ Format:
     {
       "text": "Frage?",
       "tags": ["tag1", "tag2"],
+      "predictionType": "factual",
       "resolution": {
         "outcome": true,
         "notes": "Kurze Erklärung."
@@ -95,17 +97,17 @@ Format:
 
 ---
 
-## Prompt: Gemischter Katalog (Ja/Nein + Intervall)
+## Prompt: Gemischter Katalog (Wahr/Falsch + Intervall)
 
 Für abwechslungsreichere Übungen mit verschiedenen Fragetypen.
 
 ```
 Erstelle einen gemischten Fragenkatalog für die App Kailibrate im JSON-Format.
 Thema: [THEMA]
-Anzahl: [ANZAHL] Fragen, davon etwa die Hälfte Ja/Nein, die Hälfte Intervall.
+Anzahl: [ANZAHL] Fragen, davon etwa die Hälfte Wahr/Falsch, die Hälfte Intervall.
 
-Regeln für Ja/Nein-Fragen:
-- predictionType: "binary"
+Regeln für Wahr/Falsch-Fragen:
+- predictionType: "factual"
 - "resolution.outcome": true oder false
 - "resolution.notes": kurze Erklärung
 

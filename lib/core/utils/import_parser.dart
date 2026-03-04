@@ -20,7 +20,7 @@ class ImportQuestion {
   final bool? answer;
   final DateTime? deadline;
   // Schätzfelder (optional)
-  final String predictionType;   // 'probability' | 'binary' | 'interval'
+  final String predictionType;   // 'probability' | 'binary' | 'factual' | 'interval'
   final double? probability;     // für probability-Typ
   final bool? binaryChoice;      // für binary-Typ
   final double? confidenceLevel; // für binary + interval
@@ -49,7 +49,8 @@ class ImportQuestion {
 
   bool get hasEstimateData {
     return (predictionType == 'probability' && probability != null) ||
-        (predictionType == 'binary' && binaryChoice != null) ||
+        ((predictionType == 'binary' || predictionType == 'factual') &&
+            binaryChoice != null) ||
         (predictionType == 'interval' &&
             lowerBound != null &&
             upperBound != null);
@@ -209,7 +210,7 @@ class ImportParser {
       // Vorhersagetyp – unbekannte Werte fallen auf 'probability' zurück
       final rawType = qMap['predictionType'] as String?;
       final predictionType =
-          {'probability', 'binary', 'interval'}.contains(rawType)
+          {'probability', 'binary', 'factual', 'interval'}.contains(rawType)
               ? rawType!
               : 'probability';
 

@@ -141,9 +141,12 @@ class _DetailBody extends StatelessWidget {
                   const SizedBox(height: 8),
                   Builder(builder: (context) {
                     final isBinaryCorrect =
-                        q.predictionType == 'binary' &&
+                        (q.predictionType == 'binary' ||
+                            q.predictionType == 'factual') &&
                             estimate?.binaryChoice == resolution.outcome;
-                    final isPositive = q.predictionType == 'binary'
+                    final isPositive =
+                        (q.predictionType == 'binary' ||
+                            q.predictionType == 'factual')
                         ? isBinaryCorrect
                         : resolution.outcome;
                     return Row(
@@ -157,7 +160,9 @@ class _DetailBody extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          resolution.outcome ? 'Ja' : 'Nein',
+                          q.predictionType == 'factual'
+                              ? (resolution.outcome ? 'Wahr' : 'Falsch')
+                              : (resolution.outcome ? 'Ja' : 'Nein'),
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge
@@ -173,7 +178,7 @@ class _DetailBody extends StatelessWidget {
                   if (resolution.numericOutcome != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Messwert: ${formatNum(resolution.numericOutcome)}${estimate?.unit != null && estimate!.unit!.isNotEmpty ? ' ${estimate!.unit}' : ''}',
+                      'Messwert: ${formatNum(resolution.numericOutcome)}${(estimate?.unit?.isNotEmpty ?? false) ? ' ${estimate!.unit}' : ''}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -207,6 +212,9 @@ String _estimateLabel(PredictionView prediction) {
     'binary' => estimate.binaryChoice == true
         ? 'JA – ${(estimate.confidenceLevel * 100).round()} %'
         : 'NEIN – ${(estimate.confidenceLevel * 100).round()} %',
+    'factual' => estimate.binaryChoice == true
+        ? 'WAHR – ${(estimate.confidenceLevel * 100).round()} %'
+        : 'FALSCH – ${(estimate.confidenceLevel * 100).round()} %',
     'interval' => () {
         final lower = estimate.lowerBound;
         final upper = estimate.upperBound;

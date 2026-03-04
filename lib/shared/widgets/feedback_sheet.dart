@@ -34,6 +34,9 @@ class CalibrationFeedbackSheet extends StatelessWidget {
       'binary' => e.binaryChoice == true
           ? 'JA – ${(e.confidenceLevel * 100).round()} %'
           : 'NEIN – ${(e.confidenceLevel * 100).round()} %',
+      'factual' => e.binaryChoice == true
+          ? 'WAHR – ${(e.confidenceLevel * 100).round()} %'
+          : 'FALSCH – ${(e.confidenceLevel * 100).round()} %',
       'interval' => () {
           final unit = e.unit ?? '';
           final u = unit.isNotEmpty ? ' $unit' : '';
@@ -48,7 +51,8 @@ class CalibrationFeedbackSheet extends StatelessWidget {
   // For binary questions, correctness depends on whether the predicted
   // direction matches the outcome, not just on outcome being true.
   bool _isCorrect() {
-    if (predictionType == 'binary' && estimate != null) {
+    if ((predictionType == 'binary' || predictionType == 'factual') &&
+        estimate != null) {
       return estimate!.binaryChoice == outcome;
     }
     return outcome;
@@ -94,7 +98,8 @@ class CalibrationFeedbackSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        predictionType == 'binary'
+                        (predictionType == 'binary' ||
+                                predictionType == 'factual')
                             ? (isCorrect ? 'Richtig' : 'Falsch')
                             : (outcome ? 'Eingetreten' : 'Nicht eingetreten'),
                         style:
@@ -106,6 +111,14 @@ class CalibrationFeedbackSheet extends StatelessWidget {
                       if (predictionType == 'binary')
                         Text(
                           'Antwort: ${outcome ? 'Ja' : 'Nein'}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: outcomeColor,
+                                  ),
+                        ),
+                      if (predictionType == 'factual')
+                        Text(
+                          'Fakt: ${outcome ? 'Wahr' : 'Falsch'}',
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: outcomeColor,

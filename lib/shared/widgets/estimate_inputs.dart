@@ -62,7 +62,7 @@ class EstimateFormNotifier extends StateNotifier<EstimateFormState> {
 /// Voraussetzung: [state] ist für [predictionType] gültig.
 double computeEstimateProbability(
     EstimateFormState state, String predictionType) {
-  if (predictionType == 'binary') {
+  if (predictionType == 'binary' || predictionType == 'factual') {
     return state.binaryChoice!
         ? state.confidenceLevel
         : 1.0 - state.confidenceLevel;
@@ -110,6 +110,63 @@ class BinaryEstimateInput extends StatelessWidget {
             Expanded(
               child: ChoiceButton(
                 label: 'Nein',
+                icon: Icons.cancel_outlined,
+                selected: state.binaryChoice == false,
+                color: Colors.red,
+                onTap: () => notifier.setBinaryChoice(false),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        ConfidenceSlider(
+          value: state.confidenceLevel,
+          onChanged: notifier.setConfidence,
+          label: 'Wie sicher bist du? (50 % = Raten)',
+          min: 0.5,
+        ),
+      ],
+    );
+  }
+}
+
+// --- Factual Input (Wahr/Falsch – epistemic) ---
+
+class FactualEstimateInput extends StatelessWidget {
+  final EstimateFormState state;
+  final EstimateFormNotifier notifier;
+
+  const FactualEstimateInput({
+    super.key,
+    required this.state,
+    required this.notifier,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Ist die Aussage wahr oder falsch?',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: ChoiceButton(
+                label: 'Wahr',
+                icon: Icons.check_circle_outline,
+                selected: state.binaryChoice == true,
+                color: Colors.green,
+                onTap: () => notifier.setBinaryChoice(true),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ChoiceButton(
+                label: 'Falsch',
                 icon: Icons.cancel_outlined,
                 selected: state.binaryChoice == false,
                 color: Colors.red,

@@ -117,10 +117,12 @@ class PredictionCard extends StatelessWidget {
                       Builder(builder: (context) {
                         final res = prediction.resolution!;
                         final type = prediction.question.predictionType;
-                        final isBinaryCorrect = type == 'binary' &&
-                            prediction.estimate?.binaryChoice == res.outcome;
-                        final isPositive =
-                            type == 'binary' ? isBinaryCorrect : res.outcome;
+                        final isBinaryCorrect =
+                            (type == 'binary' || type == 'factual') &&
+                                prediction.estimate?.binaryChoice == res.outcome;
+                        final isPositive = (type == 'binary' || type == 'factual')
+                            ? isBinaryCorrect
+                            : res.outcome;
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -142,6 +144,9 @@ class PredictionCard extends StatelessWidget {
                                   final u =
                                       unit.isNotEmpty ? ' $unit' : '';
                                   return '${formatNum(res.numericOutcome)}$u';
+                                }
+                                if (type == 'factual') {
+                                  return res.outcome ? 'Wahr' : 'Falsch';
                                 }
                                 return res.outcome ? 'Ja' : 'Nein';
                               }(),
@@ -176,6 +181,9 @@ String _estimateLabel(PredictionView prediction) {
     'binary' => estimate.binaryChoice == true
         ? 'JA – ${(estimate.confidenceLevel * 100).round()} %'
         : 'NEIN – ${(estimate.confidenceLevel * 100).round()} %',
+    'factual' => estimate.binaryChoice == true
+        ? 'WAHR – ${(estimate.confidenceLevel * 100).round()} %'
+        : 'FALSCH – ${(estimate.confidenceLevel * 100).round()} %',
     'interval' => () {
         final lower = estimate.lowerBound;
         final upper = estimate.upperBound;

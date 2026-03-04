@@ -68,6 +68,9 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
     if (_predictionType == 'binary' && state.binaryChoice == null) {
       return 'Bitte wähle Ja oder Nein für deine Schätzung.';
     }
+    if (_predictionType == 'factual' && state.binaryChoice == null) {
+      return 'Bitte wähle Wahr oder Falsch für deine Schätzung.';
+    }
     if (_predictionType == 'interval') {
       final lower =
           double.tryParse(state.lowerBoundText.replaceAll(',', '.'));
@@ -128,7 +131,7 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
         drift.Value<bool?> binaryChoice = const drift.Value(null);
         drift.Value<String?> unit = const drift.Value(null);
 
-        if (_predictionType == 'binary') {
+        if (_predictionType == 'binary' || _predictionType == 'factual') {
           binaryChoice = drift.Value(estimateState.binaryChoice!);
         } else if (_predictionType == 'interval') {
           final lower = double.parse(
@@ -221,18 +224,25 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
             ),
             const SizedBox(height: 8),
             SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(
+              segments: [
+                const ButtonSegment(
                   value: 'probability',
                   label: Text('Wahrsch.'),
                   icon: Icon(Icons.percent),
                 ),
-                ButtonSegment(
-                  value: 'binary',
-                  label: Text('Ja/Nein'),
-                  icon: Icon(Icons.toggle_on_outlined),
-                ),
-                ButtonSegment(
+                if (_category == 'epistemic')
+                  const ButtonSegment(
+                    value: 'factual',
+                    label: Text('Wahr/Falsch'),
+                    icon: Icon(Icons.fact_check_outlined),
+                  )
+                else
+                  const ButtonSegment(
+                    value: 'binary',
+                    label: Text('Ja/Nein'),
+                    icon: Icon(Icons.toggle_on_outlined),
+                  ),
+                const ButtonSegment(
                   value: 'interval',
                   label: Text('Intervall'),
                   icon: Icon(Icons.straighten),
@@ -275,8 +285,15 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
                 ),
               ],
               selected: {_category},
-              onSelectionChanged: (s) =>
-                  setState(() => _category = s.first),
+              onSelectionChanged: (s) => setState(() {
+                _category = s.first;
+                if (_category == 'aleatory' && _predictionType == 'factual') {
+                  _predictionType = 'probability';
+                } else if (_category == 'epistemic' &&
+                    _predictionType == 'binary') {
+                  _predictionType = 'probability';
+                }
+              }),
             ),
             const SizedBox(height: 8),
             Card(
@@ -349,6 +366,8 @@ class _NewPredictionScreenState extends ConsumerState<NewPredictionScreen> {
                   return switch (_predictionType) {
                     'binary' =>
                       BinaryEstimateInput(state: state, notifier: notifier),
+                    'factual' =>
+                      FactualEstimateInput(state: state, notifier: notifier),
                     'interval' => IntervalEstimateInput(
                         state: state,
                         notifier: notifier,
@@ -391,6 +410,8 @@ class _TypeHintCard extends StatelessWidget {
     final text = switch (type) {
       'binary' =>
         'Ja/Nein: Wähle JA oder NEIN und gib deine Konfidenz an (z.B. JA mit 80 % → P = 0,80).',
+      'factual' =>
+        'Wahr/Falsch: Wähle WAHR oder FALSCH und gib deine Überzeugung an. Für epistemische Fragen mit bekannter Antwort.',
       'interval' =>
         'Intervall: Gib eine untere und obere Grenze an. Das Ereignis gilt als eingetreten, wenn der tatsächliche Wert im Intervall liegt.',
       _ =>

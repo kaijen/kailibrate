@@ -24,7 +24,7 @@ class Questions extends Table {
   // v2: Vorhersagetyp
   TextColumn get predictionType =>
       text().withDefault(const Constant('probability'))();
-  // 'probability' | 'binary' | 'interval'
+  // 'probability' | 'binary' | 'factual' | 'interval'
   // v3: Einheit für interval-Typ (z. B. "m", "°C")
   TextColumn get unit => text().nullable()();
 }
@@ -107,7 +107,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -123,6 +123,13 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.addColumn(questions, questions.unit);
+          }
+          if (from < 4) {
+            // Migrate epistemic binary questions to the new 'factual' type.
+            await m.database.customStatement(
+              "UPDATE questions SET prediction_type = 'factual' "
+              "WHERE prediction_type = 'binary' AND category = 'epistemic'",
+            );
           }
         },
       );

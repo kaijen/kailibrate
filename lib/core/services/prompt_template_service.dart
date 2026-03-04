@@ -43,18 +43,18 @@ class PromptTemplateService {
   static const List<PromptTemplate> defaults = [
     PromptTemplate(
       id: 'default_yesno',
-      name: 'Ja/Nein-Fragen (epistemisch)',
+      name: 'Wahr/Falsch-Fragen (epistemisch)',
       isDefault: true,
       body: r'''Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
 Thema: {topic}
 Anzahl: {count}
 
 Regeln:
-- Jede Frage ist eine Ja/Nein-Frage mit eindeutiger, verifizierbarer Antwort.
+- Jede Frage ist eine Wahr/Falsch-Frage mit eindeutiger, verifizierbarer Antwort.
 - Schwierigkeitsgrad: gemischt – einige überraschend wahr, einige überraschend falsch.
-- predictionType ist immer "binary".
+- predictionType ist immer "factual".
 - Kein Schätzfeld (kein "probability") – der Nutzer schätzt selbst.
-- "resolution.outcome" enthält die korrekte Antwort (true = Ja, false = Nein).
+- "resolution.outcome" enthält die korrekte Antwort (true = Wahr, false = Falsch).
 - "resolution.notes" enthält eine kurze Erklärung oder Quelle.
 - Tags: 1–3 thematische Schlagworte auf Englisch.
 
@@ -68,7 +68,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
     {
       "text": "Frage?",
       "tags": ["tag1", "tag2"],
-      "predictionType": "binary",
+      "predictionType": "factual",
       "resolution": {
         "outcome": true,
         "notes": "Kurze Erklärung."
@@ -122,10 +122,10 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
       isDefault: true,
       body: r'''Erstelle einen gemischten Fragenkatalog für die App Kailibrate im JSON-Format.
 Thema: {topic}
-Anzahl: {count} Fragen, davon etwa die Hälfte Ja/Nein, die Hälfte Intervall.
+Anzahl: {count} Fragen, davon etwa die Hälfte Wahr/Falsch, die Hälfte Intervall.
 
-Regeln für Ja/Nein-Fragen:
-- predictionType: "binary"
+Regeln für Wahr/Falsch-Fragen:
+- predictionType: "factual"
 - "resolution.outcome": true oder false
 - "resolution.notes": kurze Erklärung
 

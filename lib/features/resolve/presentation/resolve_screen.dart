@@ -175,7 +175,7 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
             const SizedBox(height: 24),
           ],
           if (q.hasKnownAnswer && q.knownAnswer != null) ...[
-            _KnownAnswerCard(knownAnswer: q.knownAnswer!),
+            _KnownAnswerCard(knownAnswer: q.knownAnswer!, type: type),
             const SizedBox(height: 24),
           ],
           if (type == 'interval') ...[
@@ -187,7 +187,7 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
             ),
           ] else ...[
             Text(
-              'Was ist eingetreten?',
+              type == 'factual' ? 'Was ist der Fakt?' : 'Was ist eingetreten?',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -196,7 +196,7 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
                 Expanded(
                   child: FilledButton.icon(
                     icon: const Icon(Icons.check_circle_outline),
-                    label: const Text('Ja'),
+                    label: Text(type == 'factual' ? 'Wahr' : 'Ja'),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
@@ -209,7 +209,7 @@ class _ResolveBodyState extends ConsumerState<_ResolveBody> {
                 Expanded(
                   child: FilledButton.icon(
                     icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Nein'),
+                    label: Text(type == 'factual' ? 'Falsch' : 'Nein'),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
@@ -253,6 +253,9 @@ class _EstimateCard extends StatelessWidget {
       'binary' => estimate.binaryChoice == true
           ? 'JA – ${(estimate.confidenceLevel * 100).round()} %'
           : 'NEIN – ${(estimate.confidenceLevel * 100).round()} %',
+      'factual' => estimate.binaryChoice == true
+          ? 'WAHR – ${(estimate.confidenceLevel * 100).round()} %'
+          : 'FALSCH – ${(estimate.confidenceLevel * 100).round()} %',
       'interval' => () {
           final lower = estimate.lowerBound;
           final upper = estimate.upperBound;
@@ -282,12 +285,16 @@ class _EstimateCard extends StatelessWidget {
 
 class _KnownAnswerCard extends StatelessWidget {
   final bool knownAnswer;
+  final String type;
 
-  const _KnownAnswerCard({required this.knownAnswer});
+  const _KnownAnswerCard({required this.knownAnswer, required this.type});
 
   @override
   Widget build(BuildContext context) {
     final isYes = knownAnswer;
+    final label = type == 'factual'
+        ? (isYes ? 'Wahr' : 'Falsch')
+        : (isYes ? 'Ja' : 'Nein');
 
     return Card(
       color: isYes ? Colors.green.shade50 : Colors.red.shade50,
@@ -298,7 +305,7 @@ class _KnownAnswerCard extends StatelessWidget {
         ),
         title: const Text('Bekannte Antwort'),
         trailing: Text(
-          isYes ? 'Ja' : 'Nein',
+          label,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isYes ? Colors.green.shade700 : Colors.red.shade700,
