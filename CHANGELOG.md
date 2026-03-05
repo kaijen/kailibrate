@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-05
+
+### Breaking Changes
+
+- Database schema updated; migration runs automatically on first launch.
+  Downgrading to v1.0.0 is not supported without data loss.
+
+### Added
+
+- Overdue indicator on home screen stat cards; cards turn red with a
+  warning icon when unresolved predictions have passed their deadline (#54)
+- "Überfällig" filter chip in prediction list to show only overdue
+  predictions across open and pending tabs (#55)
+- Delete button in resolve screen AppBar with confirmation dialog (#56)
+- Sort order toggle in prediction list; reverses per-tab default
+  (open/pending: oldest first; resolved: newest first) (#57)
+- Tag selection via FilterChips in the AI generator (#68)
+- Calendar toggle in pending tab AppBar to sort by deadline;
+  entries without a deadline stay at the end regardless of direction
+- Global tag manager in Settings to delete tags from all predictions
+  at once, with per-tag confirmation dialog (#70)
+- "Ohne Tag" filter chip in prediction list; visible only when untagged
+  entries exist, visually distinct via secondary-color border (#72)
+- Rename action in global tag manager; inline dialog with pre-filled
+  name, updates all predictions at once (#73)
+- Confidence slider snaps to 5 % steps from 50 to 100 % (#71)
+
+### Fixed
+
+- Interval confidence slider minimum raised to 50 % (#67)
+- Calibration dot size scaled proportionally to the most-populated
+  bin instead of a hard clamp (#69)
+- Type cast error in v3 schema migration (#73)
+
 ## [1.2.0-beta.1] - 2026-03-05
 
 ### Added
@@ -580,7 +614,8 @@ breaking changes will follow semver and require a major version bump.
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.2.0-beta.1...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/kaijen/kailibrate/compare/v1.0.0...v1.2.0
 [1.2.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.1.1-beta.1...v1.2.0-beta.1
 [1.1.1-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.1.0-beta.1...v1.1.1-beta.1
 [1.1.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.0.0...v1.1.0-beta.1
