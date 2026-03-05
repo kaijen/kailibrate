@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0-beta.1] - 2026-03-05
+
+### Added
+- Overdue indicator on home screen stat cards; cards turn red with a
+  warning icon when unresolved predictions have passed their deadline (#54)
+- "Überfällig" filter chip in prediction list to show only overdue
+  predictions across open and pending tabs (#55)
+- Delete button in resolve screen AppBar with confirmation dialog (#56)
+- Sort order toggle in prediction list; reverses per-tab default
+  (open/pending: oldest first; resolved: newest first) (#57)
+- Tag selection via FilterChips in the AI generator, sourced from
+  existing database tags (#68)
+
+### Fixed
+- Interval confidence slider minimum raised to 50 %; calibration bins
+  restructured to cover 50–100 % range (#67)
+- Calibration dot size scaled proportionally to the most-populated
+  bin instead of a hard clamp (#69)
+
 ## [1.0.0] - 2026-03-04
 
 First stable release of Kailibrate. All features from the v0.20–v0.28
@@ -539,7 +558,8 @@ breaking changes will follow semver and require a major version bump.
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.1.0-beta.1...HEAD
+[1.1.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.0.0...v1.1.0-beta.1
 [1.0.0]: https://github.com/kaijen/kailibrate/compare/v0.28.0...v1.0.0
 [0.28.0]: https://github.com/kaijen/kailibrate/compare/v0.19.0...v0.28.0
 [0.28.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v0.27.0-beta.1...v0.28.0-beta.1
