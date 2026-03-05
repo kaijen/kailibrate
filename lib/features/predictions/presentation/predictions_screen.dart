@@ -27,6 +27,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
   bool _sortReversed = false;
   bool _sortByDeadline = false;
   bool _showOverdueOnly = false;
+  bool _filterUntagged = false;
 
   // Wird in build() aktualisiert – für Select-All ohne extra State.
   List<PredictionView> _currentPredictions = [];
@@ -107,8 +108,11 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
           .where((p) => p.status == PredictionStatus.resolved)
           .toList(),
     };
-    if (_selectedTags.isNotEmpty) {
-      list = list.where((p) => p.tagList.any(_selectedTags.contains)).toList();
+    if (_selectedTags.isNotEmpty || _filterUntagged) {
+      list = list.where((p) {
+        if (_filterUntagged && p.tagList.isEmpty) return true;
+        return p.tagList.any(_selectedTags.contains);
+      }).toList();
     }
     if (_showOverdueOnly && tab != FilterTab.resolved) {
       final now = DateTime.now();
@@ -285,10 +289,11 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
         data: (predictions) {
           _currentPredictions = predictions;
           final allTags = _collectTags(predictions);
+          final hasUntagged = predictions.any((p) => p.tagList.isEmpty);
           _selectedTags.removeWhere((tag) => !allTags.contains(tag));
           return Column(
             children: [
-              _buildTagFilter(allTags),
+              _buildTagFilter(allTags, hasUntagged: hasUntagged),
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -316,7 +321,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
     );
   }
 
-  Widget _buildTagFilter(Set<String> allTags) {
+  Widget _buildTagFilter(Set<String> allTags, {required bool hasUntagged}) {
     final tags = allTags.toList()..sort();
     return SizedBox(
       height: 48,
@@ -335,6 +340,28 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
               visualDensity: VisualDensity.compact,
             ),
           ),
+          if (hasUntagged)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: const Text('Ohne Tag'),
+                avatar: const Icon(Icons.label_off_outlined, size: 16),
+                selected: _filterUntagged,
+                onSelected: (_) =>
+                    setState(() => _filterUntagged = !_filterUntagged),
+                visualDensity: VisualDensity.compact,
+                selectedColor:
+                    Theme.of(context).colorScheme.secondaryContainer,
+                checkmarkColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
+                side: BorderSide(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .secondary
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+            ),
           for (final tag in tags)
             Padding(
               padding: const EdgeInsets.only(right: 8),
