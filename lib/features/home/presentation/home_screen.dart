@@ -33,6 +33,12 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildBody(
       BuildContext context, List<PredictionView> predictions) {
+    final now = DateTime.now();
+    bool isOverdue(PredictionView p) =>
+        p.question.deadline != null &&
+        p.question.deadline!.isBefore(now) &&
+        p.status != PredictionStatus.resolved;
+
     final pending =
         predictions.where((p) => p.status == PredictionStatus.pending).length;
     final needsResolution = predictions
@@ -40,6 +46,13 @@ class HomeScreen extends ConsumerWidget {
         .length;
     final resolved =
         predictions.where((p) => p.status == PredictionStatus.resolved).length;
+    final overdueOpen = predictions
+        .where((p) => p.status == PredictionStatus.pending && isOverdue(p))
+        .length;
+    final overdueAwaiting = predictions
+        .where((p) =>
+            p.status == PredictionStatus.needsResolution && isOverdue(p))
+        .length;
 
     CalibrationStats? stats;
     if (resolved > 0) {
@@ -59,7 +72,8 @@ class HomeScreen extends ConsumerWidget {
         if (predictions.isEmpty) _buildEmptyState(context),
 
         if (predictions.isNotEmpty) ...[
-          _buildStatCards(context, pending, needsResolution, resolved, stats),
+          _buildStatCards(context, pending, needsResolution, resolved,
+              overdueOpen, overdueAwaiting, stats),
           const SizedBox(height: 24),
         ],
 
@@ -95,8 +109,8 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCards(BuildContext context, int pending,
-      int needsResolution, int resolved, CalibrationStats? stats) {
+  Widget _buildStatCards(BuildContext context, int pending, int needsResolution,
+      int resolved, int overdueOpen, int overdueAwaiting, CalibrationStats? stats) {
     return Column(
       children: [
         Row(
@@ -107,6 +121,7 @@ class HomeScreen extends ConsumerWidget {
                     value: '$pending',
                     color: Colors.orange,
                     icon: Icons.pending,
+                    overdue: overdueOpen > 0,
                     onTap: () => context.push('/predictions?filter=pending'))),
             const SizedBox(width: 8),
             Expanded(
@@ -115,6 +130,7 @@ class HomeScreen extends ConsumerWidget {
                     value: '$needsResolution',
                     color: Colors.blue,
                     icon: Icons.hourglass_empty,
+                    overdue: overdueAwaiting > 0,
                     onTap: () => context
                         .push('/predictions?filter=needsResolution'))),
             const SizedBox(width: 8),
@@ -194,6 +210,7 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color color;
   final IconData icon;
+  final bool overdue;
   final VoidCallback? onTap;
 
   const _StatCard({
@@ -201,11 +218,15 @@ class _StatCard extends StatelessWidget {
     required this.value,
     required this.color,
     required this.icon,
+    this.overdue = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final valueColor = overdue
+        ? Theme.of(context).colorScheme.error
+        : null;
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -214,13 +235,15 @@ class _StatCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Icon(icon, color: color),
+              Icon(overdue ? Icons.warning_amber : icon,
+                  color: overdue ? Theme.of(context).colorScheme.error : color),
               const SizedBox(height: 4),
               Text(value,
                   style: Theme.of(context)
                       .textTheme
                       .headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+                      ?.copyWith(
+                          fontWeight: FontWeight.bold, color: valueColor)),
               Text(label, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),

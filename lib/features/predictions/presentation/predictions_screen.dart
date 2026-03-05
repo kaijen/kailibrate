@@ -25,6 +25,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
   final Set<String> _selectedTags = {};
   final Set<int> _selectedIds = {};
   bool _sortReversed = false;
+  bool _showOverdueOnly = false;
 
   // Wird in build() aktualisiert – für Select-All ohne extra State.
   List<PredictionView> _currentPredictions = [];
@@ -106,6 +107,14 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
     };
     if (_selectedTags.isNotEmpty) {
       list = list.where((p) => p.tagList.any(_selectedTags.contains)).toList();
+    }
+    if (_showOverdueOnly && tab != FilterTab.resolved) {
+      final now = DateTime.now();
+      list = list
+          .where((p) =>
+              p.question.deadline != null &&
+              p.question.deadline!.isBefore(now))
+          .toList();
     }
     if (tab == FilterTab.resolved) {
       list.sort((a, b) {
@@ -253,7 +262,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
           _selectedTags.removeWhere((tag) => !allTags.contains(tag));
           return Column(
             children: [
-              if (allTags.isNotEmpty) _buildTagFilter(allTags),
+              _buildTagFilter(allTags),
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -289,6 +298,17 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: const Text('Überfällig'),
+              avatar: const Icon(Icons.warning_amber, size: 16),
+              selected: _showOverdueOnly,
+              onSelected: (_) =>
+                  setState(() => _showOverdueOnly = !_showOverdueOnly),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
           for (final tag in tags)
             Padding(
               padding: const EdgeInsets.only(right: 8),

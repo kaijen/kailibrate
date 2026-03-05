@@ -34,6 +34,8 @@ Das Antippen einer Vorhersagenkarte öffnet immer die **Detail-Ansicht**. Von do
 
 Jede Vorhersage kann beliebig viele Tags tragen. In der Vorhersagenliste filtert ein horizontaler Chip-Streifen nach Tags. Die Filterung ist OR-verknüpft: Vorhersagen mit mindestens einem der aktiven Tags werden angezeigt.
 
+Der Chip **Überfällig** filtert zusätzlich auf Vorhersagen, deren Deadline in der Vergangenheit liegt und die noch nicht aufgelöst sind. Auf der Übersichtsseite werden die Karten „Offen" und „Ausstehend" rot hervorgehoben, sobald überfällige Einträge existieren.
+
 ---
 
 ## Mehrfachauswahl und Tag-Bearbeitung
