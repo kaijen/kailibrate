@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/providers.dart';
 import '../../../core/database/app_database.dart';
 import 'prediction_card.dart';
@@ -28,6 +30,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
   bool _sortByDeadline = false;
   bool _showOverdueOnly = false;
   bool _filterUntagged = false;
+  bool _sharing = false;
 
   // Wird in build() aktualisiert – für Select-All ohne extra State.
   List<PredictionView> _currentPredictions = [];
@@ -93,6 +96,47 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
         _selectedIds.addAll(allIds);
       }
     });
+  }
+
+  Future<void> _shareCurrentList() async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final tab = FilterTab.values[_tabController.index];
+      final predictions = _filteredForTab(_currentPredictions, tab);
+      if (predictions.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Keine Vorhersagen zum Teilen.')),
+          );
+        }
+        return;
+      }
+      final db = ref.read(appDatabaseProvider);
+      final data = await db.exportViewsForSharing(predictions);
+      final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+      final now = DateTime.now();
+      final date =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            utf8.encode(jsonString),
+            name: 'kailibrate_aufgaben_$date.json',
+            mimeType: 'application/json',
+          ),
+        ],
+        subject: 'Kailibrate-Aufgaben',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Teilen fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
   }
 
   List<PredictionView> _filteredForTab(
@@ -271,6 +315,20 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
                   onPressed: () =>
                       setState(() => _sortReversed = !_sortReversed),
                 ),
+                _sharing
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.share),
+                        tooltip: 'Aktuelle Liste teilen',
+                        onPressed: _shareCurrentList,
+                      ),
               ],
         bottom: TabBar(
           controller: _tabController,

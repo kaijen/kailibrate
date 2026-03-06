@@ -311,6 +311,40 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Export ---
 
+  /// Exportiert eine bereits gefilterte Liste von Vorhersagen ohne eigene
+  /// Schätzungen – zum Weitergeben aus der Vorhersage-Liste heraus.
+  Future<Map<String, dynamic>> exportViewsForSharing(
+      List<PredictionView> views) async {
+    final result = <Map<String, dynamic>>[];
+    for (final v in views) {
+      final q = v.question;
+      final effectiveUnit = q.predictionType == 'interval'
+          ? (q.unit ?? v.estimate?.unit)
+          : null;
+      result.add({
+        'text': q.questionText,
+        'category': q.category,
+        'predictionType': q.predictionType,
+        'tags': jsonDecode(q.tags),
+        if (q.deadline != null) 'deadline': q.deadline!.toIso8601String(),
+        if (effectiveUnit != null && effectiveUnit.isNotEmpty)
+          'unit': effectiveUnit,
+        if (v.resolution != null)
+          'resolution': _obfuscateResolution({
+            'outcome': v.resolution!.outcome,
+            if (v.resolution!.numericOutcome != null)
+              'numericOutcome': v.resolution!.numericOutcome,
+            if (v.resolution!.notes != null) 'notes': v.resolution!.notes,
+          }),
+      });
+    }
+    return {
+      'version': 2,
+      'exportedAt': DateTime.now().toIso8601String(),
+      'questions': result,
+    };
+  }
+
   /// Exportiert aufgelöste Vorhersagen ohne eigene Schätzungen – zum Weitergeben.
   Future<Map<String, dynamic>> exportForSharing(
       {String? category, List<String>? tags}) async {

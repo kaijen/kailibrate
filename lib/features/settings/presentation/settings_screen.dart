@@ -22,7 +22,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _exportLoading = false;
-  bool _sharingExportLoading = false;
   PackageInfo? _packageInfo;
 
   // AI generator settings
@@ -121,65 +120,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => _exportLoading = false);
-    }
-  }
-
-  Future<void> _exportForSharing() async {
-    final db = ref.read(appDatabaseProvider);
-    final all = await db.getResolvedPredictionViews();
-    if (!mounted) return;
-
-    if (all.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keine aufgelösten Vorhersagen vorhanden.')),
-      );
-      return;
-    }
-
-    final availableTags = all
-        .expand((v) => v.tagList)
-        .toSet()
-        .toList()
-      ..sort();
-
-    final choice = await showDialog<_ExportChoice>(
-      context: context,
-      builder: (ctx) =>
-          _SharingFilterDialog(total: all.length, availableTags: availableTags),
-    );
-    if (choice == null || !mounted) return;
-
-    setState(() => _sharingExportLoading = true);
-    try {
-      final data = await db.exportForSharing(
-        category: choice.category,
-        tags: choice.tags.isEmpty ? null : choice.tags,
-      );
-      final jsonString = const JsonEncoder.withIndent('  ').convert(data);
-
-      final now = DateTime.now();
-      final date =
-          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-      final filename = 'kailibrate_aufgaben_$date.json';
-
-      await Share.shareXFiles(
-        [
-          XFile.fromData(
-            utf8.encode(jsonString),
-            name: filename,
-            mimeType: 'application/json',
-          ),
-        ],
-        subject: 'Kailibrate-Aufgaben',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export fehlgeschlagen: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _sharingExportLoading = false);
     }
   }
 
@@ -330,20 +270,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   )
                 : null,
             onTap: _exportLoading ? null : _export,
-          ),
-          ListTile(
-            leading: const Icon(Icons.share),
-            title: const Text('Aufgaben teilen'),
-            subtitle: const Text(
-                'Aufgelöste Fragen ohne eigene Schätzungen exportieren'),
-            trailing: _sharingExportLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-            onTap: _sharingExportLoading ? null : _exportForSharing,
           ),
           ListTile(
             leading: const Icon(Icons.label_outlined),
@@ -767,116 +693,6 @@ class _TagManagerDialogState extends State<_TagManagerDialog> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Schließen'),
-        ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-
-class _ExportChoice {
-  final String? category; // null = alle
-  final List<String> tags; // leer = alle
-  const _ExportChoice({this.category, this.tags = const []});
-}
-
-class _SharingFilterDialog extends StatefulWidget {
-  final int total;
-  final List<String> availableTags;
-  const _SharingFilterDialog(
-      {required this.total, required this.availableTags});
-
-  @override
-  State<_SharingFilterDialog> createState() => _SharingFilterDialogState();
-}
-
-class _SharingFilterDialogState extends State<_SharingFilterDialog> {
-  String? _category;
-  final Set<String> _selectedTags = {};
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Aufgaben teilen'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${widget.total} aufgelöste Vorhersagen verfügbar.\n'
-              'Eigene Schätzungen werden nicht exportiert.',
-            ),
-            const SizedBox(height: 16),
-            const Text('Kategorie'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                ChoiceChip(
-                  label: const Text('Alle'),
-                  selected: _category == null,
-                  onSelected: (_) => setState(() => _category = null),
-                ),
-                ChoiceChip(
-                  label: const Text('Epistemisch'),
-                  selected: _category == 'epistemic',
-                  onSelected: (_) =>
-                      setState(() => _category = 'epistemic'),
-                ),
-                ChoiceChip(
-                  label: const Text('Aleatorisch'),
-                  selected: _category == 'aleatory',
-                  onSelected: (_) =>
-                      setState(() => _category = 'aleatory'),
-                ),
-              ],
-            ),
-            if (widget.availableTags.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text('Tags'),
-              const SizedBox(height: 4),
-              const Text(
-                'Kein Tag gewählt = alle Tags',
-                style: TextStyle(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: widget.availableTags.map((tag) {
-                  final selected = _selectedTags.contains(tag);
-                  return FilterChip(
-                    label: Text(tag),
-                    selected: selected,
-                    onSelected: (v) => setState(() {
-                      if (v) {
-                        _selectedTags.add(tag);
-                      } else {
-                        _selectedTags.remove(tag);
-                      }
-                    }),
-                  );
-                }).toList(),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(
-            _ExportChoice(
-              category: _category,
-              tags: _selectedTags.toList(),
-            ),
-          ),
-          child: const Text('Exportieren'),
         ),
       ],
     );
