@@ -237,6 +237,7 @@ class _StatsView extends StatelessWidget {
     final pairs = predictions.map(_calibrationPair).toList();
 
     final stats = CalibrationStats.compute(pairs);
+    final winkler = WinklerStats.compute(_intervalPairs(predictions));
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -254,6 +255,17 @@ class _StatsView extends StatelessWidget {
           subtitle: 'Bestraft falsche Gewissheit stärker',
           icon: Icons.functions,
         ),
+        if (winkler != null) ...[
+          const SizedBox(height: 8),
+          _ScoreCard(
+            title: 'Winkler Score',
+            value: winkler.score.toStringAsFixed(2),
+            subtitle:
+                'Intervalle: ${(winkler.hitRate * 100).round()} % Treffer '
+                '(${winkler.hitCount}/${winkler.count}) – niedriger = besser',
+            icon: Icons.straighten,
+          ),
+        ],
         const SizedBox(height: 8),
         _ScoreCard(
           title: 'Aufgelöste Vorhersagen',
@@ -585,6 +597,26 @@ class _WindowSelector extends StatelessWidget {
       ),
     );
   }
+}
+
+List<({double lower, double upper, double alpha, double actual})>
+    _intervalPairs(List<PredictionView> predictions) {
+  final result = <({double lower, double upper, double alpha, double actual})>[];
+  for (final p in predictions) {
+    if (p.question.predictionType != 'interval') continue;
+    final estimate = p.estimate;
+    final resolution = p.resolution;
+    if (estimate == null || resolution == null) continue;
+    if (estimate.lowerBound == null || estimate.upperBound == null) continue;
+    if (resolution.numericOutcome == null) continue;
+    result.add((
+      lower: estimate.lowerBound!,
+      upper: estimate.upperBound!,
+      alpha: estimate.confidenceLevel,
+      actual: resolution.numericOutcome!,
+    ));
+  }
+  return result;
 }
 
 /// Builds a calibration pair (probability, outcome) for a resolved prediction.

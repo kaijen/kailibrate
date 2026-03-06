@@ -1,5 +1,47 @@
 import 'dart:math';
 
+class WinklerStats {
+  final double score;
+  final int count;
+  final int hitCount;
+
+  const WinklerStats({
+    required this.score,
+    required this.count,
+    required this.hitCount,
+  });
+
+  double get hitRate => count > 0 ? hitCount / count : 0;
+
+  static WinklerStats? compute(
+      List<({double lower, double upper, double alpha, double actual})>
+          intervals) {
+    if (intervals.isEmpty) return null;
+
+    double sum = 0;
+    int hits = 0;
+    for (final i in intervals) {
+      final width = i.upper - i.lower;
+      final double w;
+      if (i.actual >= i.lower && i.actual <= i.upper) {
+        w = width;
+        hits++;
+      } else if (i.actual < i.lower) {
+        w = width + 2 * (i.lower - i.actual) / i.alpha;
+      } else {
+        w = width + 2 * (i.actual - i.upper) / i.alpha;
+      }
+      sum += w;
+    }
+
+    return WinklerStats(
+      score: sum / intervals.length,
+      count: intervals.length,
+      hitCount: hits,
+    );
+  }
+}
+
 class ScorePoint {
   final int index;         // 1-basierte Schätzungsnummer (chronologisch)
   final double brierScore; // kumulativer Durchschnitt bis zu diesem Punkt
