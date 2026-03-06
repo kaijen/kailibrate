@@ -234,14 +234,16 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
     final selected = _currentPredictions
         .where((p) => _selectedIds.contains(p.question.id))
         .toList();
-    final suggestions = {for (final p in selected) ...p.tagList}.toList()
+    final preselected = {for (final p in selected) ...p.tagList}.toList()
       ..sort();
+    final allTags = _collectTags(_currentPredictions).toList()..sort();
 
     final newTags = await showDialog<List<String>>(
       context: context,
       builder: (ctx) => _TagEditDialog(
         count: _selectedIds.length,
-        suggestions: suggestions,
+        suggestions: allTags,
+        preselected: preselected,
       ),
     );
     if (newTags == null || !mounted) return;
@@ -503,8 +505,13 @@ class _PredictionList extends StatelessWidget {
 class _TagEditDialog extends StatefulWidget {
   final int count;
   final List<String> suggestions;
+  final List<String> preselected;
 
-  const _TagEditDialog({required this.count, required this.suggestions});
+  const _TagEditDialog({
+    required this.count,
+    required this.suggestions,
+    this.preselected = const [],
+  });
 
   @override
   State<_TagEditDialog> createState() => _TagEditDialogState();
@@ -512,7 +519,13 @@ class _TagEditDialog extends StatefulWidget {
 
 class _TagEditDialogState extends State<_TagEditDialog> {
   final _controller = TextEditingController();
-  final List<String> _tags = [];
+  late final List<String> _tags;
+
+  @override
+  void initState() {
+    super.initState();
+    _tags = List.of(widget.preselected);
+  }
 
   @override
   void dispose() {
@@ -579,23 +592,32 @@ class _TagEditDialogState extends State<_TagEditDialog> {
               onSubmitted: (_) => _addFromController(),
               textInputAction: TextInputAction.done,
             ),
-            if (widget.suggestions.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const Text('Vorhandene Tags:',
-                  style: TextStyle(fontSize: 12)),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: widget.suggestions
-                    .map((tag) => ActionChip(
-                          label: Text(tag),
-                          onPressed: () => _addTag(tag),
-                          visualDensity: VisualDensity.compact,
-                        ))
-                    .toList(),
-              ),
-            ],
+            Builder(builder: (context) {
+              final remaining = widget.suggestions
+                  .where((t) => !_tags.contains(t))
+                  .toList();
+              if (remaining.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  const Text('Alle Tags:',
+                      style: TextStyle(fontSize: 12)),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: remaining
+                        .map((tag) => ActionChip(
+                              label: Text(tag),
+                              onPressed: () => _addTag(tag),
+                              visualDensity: VisualDensity.compact,
+                            ))
+                        .toList(),
+                  ),
+                ],
+              );
+            }),
           ],
         ),
       ),
