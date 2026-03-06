@@ -379,6 +379,98 @@ class AppDatabase extends _$AppDatabase {
     };
   }
 
+  /// Unobfuscated full export for encrypted backup use only.
+  Future<Map<String, dynamic>> exportForBackup() async {
+    final qs = await getAllQuestions();
+    final result = <Map<String, dynamic>>[];
+    for (final q in qs) {
+      final estimate = await getEstimateForQuestion(q.id);
+      final resolution = await getResolutionForQuestion(q.id);
+      result.add({
+        'text': q.questionText,
+        'category': q.category,
+        'predictionType': q.predictionType,
+        'tags': jsonDecode(q.tags),
+        if (q.source != null) 'source': q.source,
+        'hasKnownAnswer': q.hasKnownAnswer,
+        if (q.knownAnswer != null) 'knownAnswer': q.knownAnswer,
+        if (q.deadline != null) 'deadline': q.deadline!.toIso8601String(),
+        'createdAt': q.createdAt.toIso8601String(),
+        if (q.unit != null) 'unit': q.unit,
+        if (estimate != null)
+          'estimate': {
+            'probability': estimate.probability,
+            if (estimate.lowerBound != null) 'lowerBound': estimate.lowerBound,
+            if (estimate.upperBound != null) 'upperBound': estimate.upperBound,
+            if (estimate.unit != null) 'unit': estimate.unit,
+            'confidenceLevel': estimate.confidenceLevel,
+            if (estimate.binaryChoice != null)
+              'binaryChoice': estimate.binaryChoice,
+            'createdAt': estimate.createdAt.toIso8601String(),
+          },
+        if (resolution != null)
+          'resolution': {
+            'outcome': resolution.outcome,
+            if (resolution.numericOutcome != null)
+              'numericOutcome': resolution.numericOutcome,
+            if (resolution.notes != null) 'notes': resolution.notes,
+            'resolvedAt': resolution.resolvedAt.toIso8601String(),
+          },
+      });
+    }
+    return {'version': 1, 'questions': result};
+  }
+
+  /// Restores all questions, estimates, and resolutions from backup data.
+  Future<void> restoreFromBackup(Map<String, dynamic> backup) async {
+    await resetDatabase();
+    final questions = (backup['questions'] as List?) ?? [];
+    await transaction(() async {
+      for (final q in questions) {
+        final qMap = q as Map<String, dynamic>;
+        final id = await insertQuestion(QuestionsCompanion.insert(
+          questionText: qMap['text'] as String,
+          category: qMap['category'] as String? ?? 'epistemic',
+          tags: Value(jsonEncode(qMap['tags'] ?? [])),
+          source: Value(qMap['source'] as String?),
+          hasKnownAnswer: Value(qMap['hasKnownAnswer'] as bool? ?? false),
+          knownAnswer: Value(qMap['knownAnswer'] as bool?),
+          deadline: Value(qMap['deadline'] != null
+              ? DateTime.tryParse(qMap['deadline'] as String)
+              : null),
+          predictionType:
+              Value(qMap['predictionType'] as String? ?? 'binary'),
+          unit: Value(qMap['unit'] as String?),
+        ));
+
+        final est = qMap['estimate'] as Map<String, dynamic>?;
+        if (est != null) {
+          await upsertEstimate(EstimatesCompanion.insert(
+            questionId: id,
+            probability: (est['probability'] as num).toDouble(),
+            confidenceLevel:
+                Value((est['confidenceLevel'] as num?)?.toDouble() ?? 0.9),
+            binaryChoice: Value(est['binaryChoice'] as bool?),
+            lowerBound: Value((est['lowerBound'] as num?)?.toDouble()),
+            upperBound: Value((est['upperBound'] as num?)?.toDouble()),
+            unit: Value(est['unit'] as String?),
+          ));
+        }
+
+        final res = qMap['resolution'] as Map<String, dynamic>?;
+        if (res != null) {
+          await insertResolution(ResolutionsCompanion.insert(
+            questionId: id,
+            outcome: res['outcome'] as bool,
+            notes: Value(res['notes'] as String?),
+            numericOutcome:
+                Value((res['numericOutcome'] as num?)?.toDouble()),
+          ));
+        }
+      }
+    });
+  }
+
   Future<Map<String, dynamic>> exportAll() async {
     final qs = await getAllQuestions();
     final result = <Map<String, dynamic>>[];

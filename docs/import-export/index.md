@@ -20,9 +20,17 @@ Fehler bei ungültigem Schema führen zu einem Fehlerdialog mit Zeilennummer. Es
 
 ## Export
 
-### Datensicherung
+### Verschlüsseltes Backup
 
-**Einstellungen → Daten exportieren** erzeugt ein vollständiges JSON-Backup aller Vorhersagen, Schätzungen und Auflösungen. Das Backup wird per Android-Share-Sheet geteilt und lässt sich auf einem anderen Gerät vollständig wiederherstellen.
+**Einstellungen → Verschlüsseltes Backup erstellen** sichert alle Vorhersagen, Schätzungen, Auflösungen und die App-Konfiguration (API-Key, Modelle, Vorlagen) in einer passwortgeschützten `.kbak`-Datei. Die Datei wird per Android-Share-Sheet exportiert.
+
+Technische Details: AES-256-GCM-Verschlüsselung, Schlüsselableitung mit PBKDF2-HMAC-SHA256 (200 000 Iterationen), zufälliges Salt und Nonce pro Backup. Das Format ist versioniert – ältere Backups bleiben in zukünftigen App-Versionen importierbar.
+
+**Einstellungen → Backup wiederherstellen** importiert eine `.kbak`-Datei. Nach Passwort-Eingabe werden alle vorhandenen Daten überschrieben.
+
+### Daten exportieren (unverschlüsselt)
+
+**Einstellungen → Daten exportieren** erzeugt eine unverschlüsselte JSON-Datei aller Vorhersagen, Schätzungen und Auflösungen – nützlich für die Weiterverarbeitung oder Archivierung außerhalb der App.
 
 ### Aufgaben teilen
 

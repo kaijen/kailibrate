@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/providers.dart';
 import '../../../core/services/api_key_service.dart';
+import '../../../core/services/backup_service.dart';
 import '../../../core/services/prompt_template_service.dart';
 import '../../ai_generator/presentation/ai_generator_screen.dart'
     show TemplateEditorDialog;
@@ -22,6 +24,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _exportLoading = false;
+  bool _backupLoading = false;
+  bool _restoreLoading = false;
   PackageInfo? _packageInfo;
 
   // AI generator settings
@@ -120,6 +124,193 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => _exportLoading = false);
+    }
+  }
+
+  /// Shows a password input dialog. If [confirm] is true, a second field for
+  /// confirmation is shown. Returns the entered password, or null if cancelled.
+  Future<String?> _showPasswordDialog({required bool confirm}) async {
+    final ctrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: Text(confirm ? 'Backup erstellen' : 'Backup wiederherstellen'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: ctrl,
+                  obscureText: true,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Passwort',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Passwort eingeben' : null,
+                ),
+                if (confirm) ...[
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: confirmCtrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Passwort bestätigen',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) => v != ctrl.text
+                        ? 'Passwörter stimmen nicht überein'
+                        : null,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(ctx).pop(ctrl.text);
+                }
+              },
+              child: const Text('Weiter'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    ctrl.dispose();
+    confirmCtrl.dispose();
+    return result;
+  }
+
+  Future<void> _createBackup() async {
+    final password = await _showPasswordDialog(confirm: true);
+    if (password == null || !mounted) return;
+
+    setState(() => _backupLoading = true);
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final json = await BackupService.createBackup(db: db, password: password);
+
+      final now = DateTime.now();
+      final date =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+      final filename = 'kailibrate_backup_$date.kbak';
+
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            utf8.encode(json),
+            name: filename,
+            mimeType: 'application/json',
+          ),
+        ],
+        subject: 'Kailibrate-Backup',
+      );
+    } on BackupException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Backup fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _backupLoading = false);
+    }
+  }
+
+  Future<void> _restoreBackup() async {
+    // Step 1: pick file
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['kbak', 'json'],
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty || !mounted) return;
+
+    final file = result.files.first;
+    if (file.bytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Datei konnte nicht gelesen werden.')),
+      );
+      return;
+    }
+
+    // Step 2: confirm data reset
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Backup wiederherstellen?'),
+        content: const Text(
+          'Alle vorhandenen Daten werden unwiderruflich überschrieben.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Wiederherstellen'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    // Step 3: password
+    final password = await _showPasswordDialog(confirm: false);
+    if (password == null || !mounted) return;
+
+    setState(() => _restoreLoading = true);
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final backupJson = utf8.decode(file.bytes!);
+      await BackupService.restoreBackup(
+          db: db, backupJson: backupJson, password: password);
+
+      ref.invalidate(predictionsStreamProvider);
+      await _loadAiSettings();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Backup erfolgreich wiederhergestellt.')),
+        );
+      }
+    } on BackupException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Wiederherstellung fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _restoreLoading = false);
     }
   }
 
@@ -270,6 +461,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   )
                 : null,
             onTap: _exportLoading ? null : _export,
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_outlined),
+            title: const Text('Verschlüsseltes Backup erstellen'),
+            subtitle: const Text(
+                'Alle Daten inkl. Konfiguration mit Passwort sichern'),
+            trailing: _backupLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+            onTap: _backupLoading ? null : _createBackup,
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_open_outlined),
+            title: const Text('Backup wiederherstellen'),
+            subtitle: const Text('Verschlüsselte .kbak-Datei importieren'),
+            trailing: _restoreLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+            onTap: _restoreLoading ? null : _restoreBackup,
           ),
           ListTile(
             leading: const Icon(Icons.label_outlined),
