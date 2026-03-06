@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/providers.dart';
@@ -88,6 +89,8 @@ class ImportScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _FormatInfoCard(),
+            const SizedBox(height: 16),
+            const _TemplateSection(),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -334,6 +337,103 @@ class _FormatInfoCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Template-Sektion
+// ---------------------------------------------------------------------------
+
+class _TemplateSection extends StatelessWidget {
+  const _TemplateSection();
+
+  static const _binaryTemplate = '''
+version: 1
+category: aleatory
+source: Meine Vorhersagen
+questions:
+  - text: Wird es morgen regnen?
+    tags: [beispiel]
+    predictionType: binary
+    binaryChoice: true        # Ja = true, Nein = false
+    confidenceLevel: 0.70     # Konfidenz 0.50–1.00 (5%-Schritte)
+    deadline: "2026-12-31"    # optional, ISO-8601
+''';
+
+  static const _factualTemplate = '''
+version: 1
+category: epistemic
+source: Meine Trivia
+questions:
+  - text: Liegt Santiago de Chile östlich von New York?
+    tags: [beispiel]
+    predictionType: factual
+    binaryChoice: true        # Wahr = true, Falsch = false
+    confidenceLevel: 0.70     # Konfidenz 0.50–1.00 (5%-Schritte)
+    answer: true              # bekannte Antwort (optional)
+''';
+
+  static const _intervalTemplate = '''
+version: 1
+category: aleatory
+source: Meine Schätzungen
+questions:
+  - text: Wie viele Kilometer werde ich im März laufen?
+    tags: [beispiel]
+    predictionType: interval
+    lowerBound: 20
+    upperBound: 45
+    confidenceLevel: 0.80     # Konfidenz 0.50–1.00 (5%-Schritte)
+    unit: km                  # optional
+    deadline: "2026-03-31"    # optional, ISO-8601
+''';
+
+  Future<void> _share(String yaml, String name) async {
+    await Share.shareXFiles(
+      [
+        XFile.fromData(
+          utf8.encode(yaml.trim()),
+          name: name,
+          mimeType: 'application/yaml',
+        ),
+      ],
+      subject: 'Kailibrate-Vorlage',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Vorlagen', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.toggle_on_outlined, size: 18),
+              label: const Text('Ja/Nein'),
+              onPressed: () =>
+                  _share(_binaryTemplate, 'vorlage_binary.yaml'),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.fact_check_outlined, size: 18),
+              label: const Text('Wahr/Falsch'),
+              onPressed: () =>
+                  _share(_factualTemplate, 'vorlage_factual.yaml'),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.straighten, size: 18),
+              label: const Text('Intervall'),
+              onPressed: () =>
+                  _share(_intervalTemplate, 'vorlage_interval.yaml'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
