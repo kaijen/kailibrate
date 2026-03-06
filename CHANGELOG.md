@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-03-06
+
+### Added
+- Winkler Score for interval predictions on the statistics screen;
+  shows mean interval score and hit rate (#88)
+
+### Fixed
+- Template share buttons now write to a temporary file before
+  sharing; `XFile.fromData()` produced no valid URI for Android
+  share intents (#81)
+
 ## [1.3.0] - 2026-03-06
 
 ### Added
@@ -637,7 +648,8 @@ breaking changes will follow semver and require a major version bump.
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/kaijen/kailibrate/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/kaijen/kailibrate/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/kaijen/kailibrate/compare/v1.0.0...v1.2.0
 [1.2.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.1.1-beta.1...v1.2.0-beta.1
