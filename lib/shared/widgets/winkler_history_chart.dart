@@ -6,11 +6,15 @@ import '../../core/utils/calibration_math.dart';
 class WinklerHistoryChart extends StatelessWidget {
   final List<WinklerPoint> points;
   final bool expand;
+  final void Function(int questionId)? onPointTap;
+  final VoidCallback? onBackgroundTap;
 
   const WinklerHistoryChart({
     super.key,
     required this.points,
     this.expand = false,
+    this.onPointTap,
+    this.onBackgroundTap,
   });
 
   // --- log10 helpers ---
@@ -115,6 +119,18 @@ class WinklerHistoryChart extends StatelessWidget {
                 const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles:
                 const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          lineTouchData: LineTouchData(
+            handleBuiltInTouches: false,
+            touchCallback: (event, response) {
+              if (event is! FlTapUpEvent) return;
+              final spots = response?.lineBarSpots;
+              if (spots != null && spots.isNotEmpty) {
+                onPointTap?.call(points[spots.first.spotIndex].questionId);
+              } else {
+                onBackgroundTap?.call();
+              }
+            },
           ),
           lineBarsData: [
             LineChartBarData(

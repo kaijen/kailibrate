@@ -70,7 +70,7 @@ Die **Punktgröße** zeigt die relative Datenmenge: Der Bin mit den meisten Sch�
 
 Die Verlaufsdiagramme zeigen, wie sich die Scores mit jeder weiteren Auflösung entwickeln. Die gestrichelte Linie markiert das Münzwurf-Niveau (0,25 bzw. ≈ 0,69). Mit dem Selektor oben rechts lässt sich der sichtbare Ausschnitt auf die letzten 25, 50 oder 100 Schätzungen einschränken.
 
-Ein Tipp auf ein Diagramm öffnet es als Vollbild-Ansicht im Querformat.
+Ein Tipp auf ein Diagramm öffnet es als Vollbild-Ansicht im Querformat. Im Winkler-Score-Verlauf öffnet ein Tipp direkt auf einen Datenpunkt die zugehörige Schätzung; ein Tipp auf den Hintergrund öffnet das Vollbild.
 
 ---
 

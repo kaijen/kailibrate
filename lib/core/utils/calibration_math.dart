@@ -43,7 +43,7 @@ class WinklerStats {
 
   /// Einzelne Winkler-Scores in chronologischer Reihenfolge.
   static List<WinklerPoint> computeHistory(
-      List<({double lower, double upper, double alpha, double actual})>
+      List<({double lower, double upper, double alpha, double actual, int questionId})>
           intervals) {
     final result = <WinklerPoint>[];
     for (var i = 0; i < intervals.length; i++) {
@@ -61,7 +61,8 @@ class WinklerStats {
         w = width + 2 * (iv.actual - iv.upper) / iv.alpha;
         isHit = false;
       }
-      result.add(WinklerPoint(index: i + 1, score: w, isHit: isHit));
+      result.add(WinklerPoint(
+          index: i + 1, score: w, isHit: isHit, questionId: iv.questionId));
     }
     return result;
   }
@@ -80,14 +81,16 @@ class ScorePoint {
 }
 
 class WinklerPoint {
-  final int index;    // 1-basierte Nummer (chronologisch, nur Intervall-Schätzungen)
-  final double score; // Einzelwert dieser Schätzung (niedriger = besser)
-  final bool isHit;   // true = Actual-Wert liegt im Intervall
+  final int index;      // 1-basierte Nummer (chronologisch, nur Intervall-Schätzungen)
+  final double score;   // Einzelwert dieser Schätzung (niedriger = besser)
+  final bool isHit;     // true = Actual-Wert liegt im Intervall
+  final int questionId; // ID der zugehörigen Frage für Navigation
 
   const WinklerPoint({
     required this.index,
     required this.score,
     required this.isHit,
+    required this.questionId,
   });
 }
 

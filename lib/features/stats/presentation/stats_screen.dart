@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/providers.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/calibration_math.dart';
@@ -435,7 +436,7 @@ class _HistorySectionState extends State<_HistorySection> {
     }
 
     final winklerInputs =
-        <({double lower, double upper, double alpha, double actual})>[];
+        <({double lower, double upper, double alpha, double actual, int questionId})>[];
     for (final p in sorted) {
       if (p.question.predictionType != 'interval') continue;
       final e = p.estimate!;
@@ -450,6 +451,7 @@ class _HistorySectionState extends State<_HistorySection> {
         upper: e.upperBound!,
         alpha: e.confidenceLevel,
         actual: r.numericOutcome!,
+        questionId: p.question.id,
       ));
     }
     var winklerHistory = WinklerStats.computeHistory(winklerInputs);
@@ -529,24 +531,20 @@ class _HistorySectionState extends State<_HistorySection> {
               style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 4),
           Text(
-            'Einzelwerte – grün: Treffer, rot: verfehlt',
+            'Einzelwerte – grün: Treffer, rot: verfehlt. Tippen zum Öffnen.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 4),
-          Stack(
-            children: [
-              Card(child: WinklerHistoryChart(points: winklerHistory)),
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () => _openChartFullscreen(
-                    context,
-                    'Winkler Score – Verlauf',
-                    WinklerHistoryChart(points: winklerHistory, expand: true),
-                  ),
-                  behavior: HitTestBehavior.opaque,
-                ),
+          Card(
+            child: WinklerHistoryChart(
+              points: winklerHistory,
+              onPointTap: (id) => context.push('/prediction/$id'),
+              onBackgroundTap: () => _openChartFullscreen(
+                context,
+                'Winkler Score – Verlauf',
+                WinklerHistoryChart(points: winklerHistory, expand: true),
               ),
-            ],
+            ),
           ),
         ],
       ],
