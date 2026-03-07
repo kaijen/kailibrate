@@ -9,12 +9,16 @@ class ScoreHistoryChart extends StatelessWidget {
   /// true = Brier Score, false = Log Loss
   final bool isBrier;
   final bool expand;
+  final double? visibleMinX;
+  final double? visibleMaxX;
 
   const ScoreHistoryChart({
     super.key,
     required this.points,
     required this.isBrier,
     this.expand = false,
+    this.visibleMinX,
+    this.visibleMaxX,
   });
 
   @override
@@ -23,6 +27,8 @@ class ScoreHistoryChart extends StatelessWidget {
 
     final xMin = points.first.index.toDouble();
     final xMax = points.last.index.toDouble();
+    final effectiveMinX = visibleMinX ?? xMin;
+    final effectiveMaxX = visibleMaxX ?? xMax;
 
     final values = isBrier
         ? points.map((p) => p.brierScore).toList()
@@ -40,7 +46,7 @@ class ScoreHistoryChart extends StatelessWidget {
         FlSpot(points[i].index.toDouble(), values[i]),
     ];
 
-    final xRange = max(xMax - xMin, 1.0);
+    final xRange = max(effectiveMaxX - effectiveMinX, 1.0);
     final xInterval = xRange <= 10
         ? 2.0
         : xRange <= 25
@@ -63,8 +69,8 @@ class ScoreHistoryChart extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 12, 16, 4),
       child: LineChart(
           LineChartData(
-            minX: xMin,
-            maxX: xMax,
+            minX: effectiveMinX,
+            maxX: effectiveMaxX,
             minY: 0,
             maxY: yMax,
             gridData: FlGridData(
@@ -119,7 +125,7 @@ class ScoreHistoryChart extends StatelessWidget {
             lineBarsData: [
               // Referenzlinie: Münzwurf
               LineChartBarData(
-                spots: [FlSpot(xMin, refLine), FlSpot(xMax, refLine)],
+                spots: [FlSpot(effectiveMinX, refLine), FlSpot(effectiveMaxX, refLine)],
                 isCurved: false,
                 color: cs.error.withOpacity(0.45),
                 barWidth: 1,

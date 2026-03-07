@@ -8,6 +8,8 @@ class WinklerHistoryChart extends StatelessWidget {
   final bool expand;
   final void Function(int questionId)? onPointTap;
   final VoidCallback? onBackgroundTap;
+  final double? visibleMinX;
+  final double? visibleMaxX;
 
   const WinklerHistoryChart({
     super.key,
@@ -15,6 +17,8 @@ class WinklerHistoryChart extends StatelessWidget {
     this.expand = false,
     this.onPointTap,
     this.onBackgroundTap,
+    this.visibleMinX,
+    this.visibleMaxX,
   });
 
   // --- log10 helpers ---
@@ -28,6 +32,8 @@ class WinklerHistoryChart extends StatelessWidget {
 
     final xMin = points.first.index.toDouble();
     final xMax = points.last.index.toDouble();
+    final effectiveMinX = visibleMinX ?? xMin;
+    final effectiveMaxX = visibleMaxX ?? xMax;
 
     // Transform scores to log10 space for plotting.
     final logValues = [for (final p in points) _toLog(p.score)];
@@ -43,7 +49,7 @@ class WinklerHistoryChart extends StatelessWidget {
         FlSpot(points[i].index.toDouble(), logValues[i]),
     ];
 
-    final xRange = max(xMax - xMin, 1.0);
+    final xRange = max(effectiveMaxX - effectiveMinX, 1.0);
     final xInterval = xRange <= 10
         ? 2.0
         : xRange <= 25
@@ -61,8 +67,8 @@ class WinklerHistoryChart extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 12, 16, 4),
       child: LineChart(
         LineChartData(
-          minX: xMin,
-          maxX: xMax,
+          minX: effectiveMinX,
+          maxX: effectiveMaxX,
           minY: yMinLog,
           maxY: yMaxLog,
           gridData: FlGridData(

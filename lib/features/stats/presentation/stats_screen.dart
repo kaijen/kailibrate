@@ -282,7 +282,9 @@ class _StatsView extends StatelessWidget {
                 onTap: () => _openChartFullscreen(
                   context,
                   'Kalibrierungskurve',
-                  CalibrationChart(bins: stats.bins, expand: true),
+                  (_, __) => CalibrationChart(bins: stats.bins, expand: true),
+                  dataMinX: 0,
+                  dataMaxX: 1,
                 ),
                 behavior: HitTestBehavior.opaque,
               ),
@@ -496,8 +498,15 @@ class _HistorySectionState extends State<_HistorySection> {
                   onTap: () => _openChartFullscreen(
                     context,
                     'Brier Score – Verlauf',
-                    ScoreHistoryChart(
-                        points: history, isBrier: true, expand: true),
+                    (minX, maxX) => ScoreHistoryChart(
+                      points: history,
+                      isBrier: true,
+                      expand: true,
+                      visibleMinX: minX,
+                      visibleMaxX: maxX,
+                    ),
+                    dataMinX: history.first.index.toDouble(),
+                    dataMaxX: history.last.index.toDouble(),
                   ),
                   behavior: HitTestBehavior.opaque,
                 ),
@@ -516,8 +525,15 @@ class _HistorySectionState extends State<_HistorySection> {
                   onTap: () => _openChartFullscreen(
                     context,
                     'Log Loss – Verlauf',
-                    ScoreHistoryChart(
-                        points: history, isBrier: false, expand: true),
+                    (minX, maxX) => ScoreHistoryChart(
+                      points: history,
+                      isBrier: false,
+                      expand: true,
+                      visibleMinX: minX,
+                      visibleMaxX: maxX,
+                    ),
+                    dataMinX: history.first.index.toDouble(),
+                    dataMaxX: history.last.index.toDouble(),
                   ),
                   behavior: HitTestBehavior.opaque,
                 ),
@@ -543,14 +559,18 @@ class _HistorySectionState extends State<_HistorySection> {
                   onTap: () => _openChartFullscreen(
                     context,
                     'Winkler Score – Verlauf',
-                    WinklerHistoryChart(
+                    (minX, maxX) => WinklerHistoryChart(
                       points: winklerHistory,
                       expand: true,
+                      visibleMinX: minX,
+                      visibleMaxX: maxX,
                       onPointTap: (id) {
                         Navigator.of(context, rootNavigator: true).pop();
                         context.push('/prediction/$id');
                       },
                     ),
+                    dataMinX: winklerHistory.first.index.toDouble(),
+                    dataMaxX: winklerHistory.last.index.toDouble(),
                     subtitle: 'Datenpunkt tippen zum Öffnen der Schätzung',
                   ),
                   behavior: HitTestBehavior.opaque,
@@ -565,8 +585,13 @@ class _HistorySectionState extends State<_HistorySection> {
 }
 
 void _openChartFullscreen(
-    BuildContext context, String title, Widget chart,
-    {String? subtitle}) {
+  BuildContext context,
+  String title,
+  Widget Function(double, double) chartBuilder, {
+  required double dataMinX,
+  required double dataMaxX,
+  String? subtitle,
+}) {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -576,7 +601,12 @@ void _openChartFullscreen(
     useSafeArea: false,
     barrierDismissible: true,
     builder: (_) => _FullscreenChartDialog(
-        title: title, chart: chart, subtitle: subtitle),
+      title: title,
+      chartBuilder: chartBuilder,
+      dataMinX: dataMinX,
+      dataMaxX: dataMaxX,
+      subtitle: subtitle,
+    ),
   ).whenComplete(() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -587,13 +617,71 @@ void _openChartFullscreen(
   });
 }
 
-class _FullscreenChartDialog extends StatelessWidget {
+class _FullscreenChartDialog extends StatefulWidget {
   final String title;
   final String? subtitle;
-  final Widget chart;
+  final Widget Function(double visibleMinX, double visibleMaxX) chartBuilder;
+  final double dataMinX;
+  final double dataMaxX;
 
-  const _FullscreenChartDialog(
-      {required this.title, required this.chart, this.subtitle});
+  const _FullscreenChartDialog({
+    required this.title,
+    required this.chartBuilder,
+    required this.dataMinX,
+    required this.dataMaxX,
+    this.subtitle,
+  });
+
+  @override
+  State<_FullscreenChartDialog> createState() => _FullscreenChartDialogState();
+}
+
+class _FullscreenChartDialogState extends State<_FullscreenChartDialog> {
+  late double _visibleMinX;
+  late double _visibleMaxX;
+  double _scaleStartMin = 0;
+  double _scaleStartMax = 0;
+  double _scaleStartFocalDataX = 0;
+  double _chartWidth = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _visibleMinX = widget.dataMinX;
+    _visibleMaxX = widget.dataMaxX;
+  }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _scaleStartMin = _visibleMinX;
+    _scaleStartMax = _visibleMaxX;
+    final frac =
+        (details.localFocalPoint.dx / _chartWidth).clamp(0.0, 1.0);
+    _scaleStartFocalDataX =
+        _scaleStartMin + frac * (_scaleStartMax - _scaleStartMin);
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    final startRange = _scaleStartMax - _scaleStartMin;
+    final fullRange = widget.dataMaxX - widget.dataMinX;
+    final newRange =
+        (startRange / details.scale).clamp(fullRange / 20.0, fullRange);
+    final focalFrac =
+        (details.localFocalPoint.dx / _chartWidth).clamp(0.0, 1.0);
+    var newMin = _scaleStartFocalDataX - focalFrac * newRange;
+    var newMax = newMin + newRange;
+    if (newMin < widget.dataMinX) {
+      newMax += widget.dataMinX - newMin;
+      newMin = widget.dataMinX;
+    }
+    if (newMax > widget.dataMaxX) {
+      newMin -= newMax - widget.dataMaxX;
+      newMax = widget.dataMaxX;
+    }
+    setState(() {
+      _visibleMinX = newMin.clamp(widget.dataMinX, widget.dataMaxX);
+      _visibleMaxX = newMax.clamp(widget.dataMinX, widget.dataMaxX);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -611,10 +699,10 @@ class _FullscreenChartDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(title,
+                      Text(widget.title,
                           style: Theme.of(context).textTheme.titleMedium),
-                      if (subtitle != null)
-                        Text(subtitle!,
+                      if (widget.subtitle != null)
+                        Text(widget.subtitle!,
                             style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
@@ -625,7 +713,22 @@ class _FullscreenChartDialog extends StatelessWidget {
                 ),
               ],
             ),
-            Expanded(child: chart),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (_, constraints) {
+                  _chartWidth = constraints.maxWidth;
+                  return GestureDetector(
+                    onScaleStart: _onScaleStart,
+                    onScaleUpdate: _onScaleUpdate,
+                    onDoubleTap: () => setState(() {
+                      _visibleMinX = widget.dataMinX;
+                      _visibleMaxX = widget.dataMaxX;
+                    }),
+                    child: widget.chartBuilder(_visibleMinX, _visibleMaxX),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
