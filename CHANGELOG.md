@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0-beta.7] - 2026-03-07
+
+### Fixed
+- Factual prediction type missing from type filter chips (#93)
+- Overdue filter chip had no effect on the resolved tab (#93)
+
 ## [1.7.0-beta.6] - 2026-03-07
 
 ### Added
@@ -708,7 +714,8 @@ breaking changes will follow semver and require a major version bump.
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.6...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.7...HEAD
+[1.7.0-beta.7]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.6...v1.7.0-beta.7
 [1.7.0-beta.6]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.5...v1.7.0-beta.6
 [1.7.0-beta.5]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.4...v1.7.0-beta.5
 [1.7.0-beta.4]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.3...v1.7.0-beta.4
