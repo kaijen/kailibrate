@@ -1,6 +1,6 @@
 # Statistiken
 
-Kailibrate berechnet drei Kennzahlen, um die Qualität von Schätzungen zu messen. Nur aufgelöste Vorhersagen fließen ein.
+Kailibrate berechnet vier Kennzahlen, um die Qualität von Schätzungen zu messen. Nur aufgelöste Vorhersagen fließen ein.
 
 ## Brier Score
 
@@ -30,6 +30,20 @@ Wer ein eingetretenes Ereignis mit 1 % schätzt, wird stärker bestraft als beim
 
 ---
 
+## Winkler Score
+
+Bewertet Intervallschätzungen. Für jeden Schätzbereich `[L, U]` mit Konfidenzniveau `α` gilt:
+
+```
+W = (U − L)                            falls Actual ∈ [L, U]
+W = (U − L) + 2·(L − Actual) / α      falls Actual < L
+W = (U − L) + 2·(Actual − U) / α      falls Actual > U
+```
+
+Je enger das Intervall und je häufiger der tatsächliche Wert darin liegt, desto besser (niedriger). Kailibrate zeigt die Einzelwerte jeder Schätzung als Punkt-Diagramm über die Zeit – Treffer grün, Ausreißer rot. Ein Durchschnitt über alle Fragen hinweg wäre irreführend, da der Score einheitenabhängig ist: Ein guter Wert bei Körpergrößen (z. B. 5 cm) und ein guter Wert bei Einwohnerzahlen (z. B. 200.000) lassen sich nicht vergleichen.
+
+---
+
 ## Kalibrierungskurve
 
 Schätzungen werden in 10-%-Bins gruppiert (50–60 %, 60–70 %, …). Pro Bin zeigt die Kurve:
@@ -52,6 +66,7 @@ Die **Punktgröße** zeigt die relative Datenmenge: Der Bin mit den meisten Sch�
 | Kalibrierungskurve | Bin-Mitte vs. Trefferquote, Diagonale als Referenz |
 | Brier-Score-Verlauf | Kumulativer Durchschnitt nach jeder aufgelösten Schätzung |
 | Log-Loss-Verlauf | Kumulativer Durchschnitt nach jeder aufgelösten Schätzung |
+| Winkler-Score-Verlauf | Einzelwerte je Intervallschätzung – grün: Treffer, rot: verfehlt |
 
 Die Verlaufsdiagramme zeigen, wie sich die Scores mit jeder weiteren Auflösung entwickeln. Die gestrichelte Linie markiert das Münzwurf-Niveau (0,25 bzw. ≈ 0,69). Mit dem Selektor oben rechts lässt sich der sichtbare Ausschnitt auf die letzten 25, 50 oder 100 Schätzungen einschränken.
 

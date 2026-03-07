@@ -40,6 +40,31 @@ class WinklerStats {
       hitCount: hits,
     );
   }
+
+  /// Einzelne Winkler-Scores in chronologischer Reihenfolge.
+  static List<WinklerPoint> computeHistory(
+      List<({double lower, double upper, double alpha, double actual})>
+          intervals) {
+    final result = <WinklerPoint>[];
+    for (var i = 0; i < intervals.length; i++) {
+      final iv = intervals[i];
+      final width = iv.upper - iv.lower;
+      final bool isHit;
+      final double w;
+      if (iv.actual >= iv.lower && iv.actual <= iv.upper) {
+        w = width;
+        isHit = true;
+      } else if (iv.actual < iv.lower) {
+        w = width + 2 * (iv.lower - iv.actual) / iv.alpha;
+        isHit = false;
+      } else {
+        w = width + 2 * (iv.actual - iv.upper) / iv.alpha;
+        isHit = false;
+      }
+      result.add(WinklerPoint(index: i + 1, score: w, isHit: isHit));
+    }
+    return result;
+  }
 }
 
 class ScorePoint {
@@ -51,6 +76,18 @@ class ScorePoint {
     required this.index,
     required this.brierScore,
     required this.logLoss,
+  });
+}
+
+class WinklerPoint {
+  final int index;    // 1-basierte Nummer (chronologisch, nur Intervall-Schätzungen)
+  final double score; // Einzelwert dieser Schätzung (niedriger = besser)
+  final bool isHit;   // true = Actual-Wert liegt im Intervall
+
+  const WinklerPoint({
+    required this.index,
+    required this.score,
+    required this.isHit,
   });
 }
 

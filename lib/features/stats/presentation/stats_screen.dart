@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/utils/calibration_math.dart';
 import '../../../shared/widgets/calibration_chart.dart';
 import '../../../shared/widgets/score_history_chart.dart';
+import '../../../shared/widgets/winkler_history_chart.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
@@ -237,7 +238,6 @@ class _StatsView extends StatelessWidget {
     final pairs = predictions.map(_calibrationPair).toList();
 
     final stats = CalibrationStats.compute(pairs);
-    final winkler = WinklerStats.compute(_intervalPairs(predictions));
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -255,17 +255,6 @@ class _StatsView extends StatelessWidget {
           subtitle: 'Bestraft falsche Gewissheit stärker',
           icon: Icons.functions,
         ),
-        if (winkler != null) ...[
-          const SizedBox(height: 8),
-          _ScoreCard(
-            title: 'Winkler Score',
-            value: winkler.score.toStringAsFixed(2),
-            subtitle:
-                'Intervalle: ${(winkler.hitRate * 100).round()} % Treffer '
-                '(${winkler.hitCount}/${winkler.count}) – niedriger = besser',
-            icon: Icons.straighten,
-          ),
-        ],
         const SizedBox(height: 8),
         _ScoreCard(
           title: 'Aufgelöste Vorhersagen',
@@ -441,12 +430,36 @@ class _HistorySectionState extends State<_HistorySection> {
     final pairs = sorted.map(_calibrationPair).toList();
 
     var history = CalibrationStats.computeHistory(pairs);
-
     if (_window > 0 && history.length > _window) {
       history = history.sublist(history.length - _window);
     }
 
-    if (history.length < 2) return const SizedBox.shrink();
+    final winklerInputs =
+        <({double lower, double upper, double alpha, double actual})>[];
+    for (final p in sorted) {
+      if (p.question.predictionType != 'interval') continue;
+      final e = p.estimate!;
+      final r = p.resolution!;
+      if (e.lowerBound == null ||
+          e.upperBound == null ||
+          r.numericOutcome == null) {
+        continue;
+      }
+      winklerInputs.add((
+        lower: e.lowerBound!,
+        upper: e.upperBound!,
+        alpha: e.confidenceLevel,
+        actual: r.numericOutcome!,
+      ));
+    }
+    var winklerHistory = WinklerStats.computeHistory(winklerInputs);
+    if (_window > 0 && winklerHistory.length > _window) {
+      winklerHistory = winklerHistory.sublist(winklerHistory.length - _window);
+    }
+
+    if (history.length < 2 && winklerHistory.length < 2) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -463,49 +476,79 @@ class _HistorySectionState extends State<_HistorySection> {
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Kumulativer Durchschnitt – gestrichelt: Münzwurf-Niveau',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 12),
-        Text('Brier Score',
-            style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 4),
-        Stack(
-          children: [
-            Card(child: ScoreHistoryChart(points: history, isBrier: true)),
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => _openChartFullscreen(
-                  context,
-                  'Brier Score – Verlauf',
-                  ScoreHistoryChart(points: history, isBrier: true, expand: true),
+        if (history.length >= 2) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Kumulativer Durchschnitt – gestrichelt: Münzwurf-Niveau',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Text('Brier Score',
+              style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 4),
+          Stack(
+            children: [
+              Card(child: ScoreHistoryChart(points: history, isBrier: true)),
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => _openChartFullscreen(
+                    context,
+                    'Brier Score – Verlauf',
+                    ScoreHistoryChart(
+                        points: history, isBrier: true, expand: true),
+                  ),
+                  behavior: HitTestBehavior.opaque,
                 ),
-                behavior: HitTestBehavior.opaque,
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text('Log Loss',
-            style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 4),
-        Stack(
-          children: [
-            Card(child: ScoreHistoryChart(points: history, isBrier: false)),
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => _openChartFullscreen(
-                  context,
-                  'Log Loss – Verlauf',
-                  ScoreHistoryChart(points: history, isBrier: false, expand: true),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text('Log Loss',
+              style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 4),
+          Stack(
+            children: [
+              Card(child: ScoreHistoryChart(points: history, isBrier: false)),
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => _openChartFullscreen(
+                    context,
+                    'Log Loss – Verlauf',
+                    ScoreHistoryChart(
+                        points: history, isBrier: false, expand: true),
+                  ),
+                  behavior: HitTestBehavior.opaque,
                 ),
-                behavior: HitTestBehavior.opaque,
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
+        if (winklerHistory.length >= 2) ...[
+          const SizedBox(height: 8),
+          Text('Winkler Score',
+              style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 4),
+          Text(
+            'Einzelwerte – grün: Treffer, rot: verfehlt',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 4),
+          Stack(
+            children: [
+              Card(child: WinklerHistoryChart(points: winklerHistory)),
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => _openChartFullscreen(
+                    context,
+                    'Winkler Score – Verlauf',
+                    WinklerHistoryChart(points: winklerHistory, expand: true),
+                  ),
+                  behavior: HitTestBehavior.opaque,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -597,26 +640,6 @@ class _WindowSelector extends StatelessWidget {
       ),
     );
   }
-}
-
-List<({double lower, double upper, double alpha, double actual})>
-    _intervalPairs(List<PredictionView> predictions) {
-  final result = <({double lower, double upper, double alpha, double actual})>[];
-  for (final p in predictions) {
-    if (p.question.predictionType != 'interval') continue;
-    final estimate = p.estimate;
-    final resolution = p.resolution;
-    if (estimate == null || resolution == null) continue;
-    if (estimate.lowerBound == null || estimate.upperBound == null) continue;
-    if (resolution.numericOutcome == null) continue;
-    result.add((
-      lower: estimate.lowerBound!,
-      upper: estimate.upperBound!,
-      alpha: estimate.confidenceLevel,
-      actual: resolution.numericOutcome!,
-    ));
-  }
-  return result;
 }
 
 /// Builds a calibration pair (probability, outcome) for a resolved prediction.
