@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0-beta.1] - 2026-03-07
+
+### Added
+- Fullscreen charts support pinch-to-zoom and panning via
+  InteractiveViewer; double-tap resets the zoom (#91)
+
 ## [1.6.0] - 2026-03-07
 
 ### Fixed
@@ -674,7 +680,8 @@ breaking changes will follow semver and require a major version bump.
 - Settings screen, tag filter, and clipboard import for question sets
 - GitHub Actions release workflow for tag-triggered APK builds
 
-[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/kaijen/kailibrate/compare/v1.7.0-beta.1...HEAD
+[1.7.0-beta.1]: https://github.com/kaijen/kailibrate/compare/v1.6.0...v1.7.0-beta.1
 [1.6.0]: https://github.com/kaijen/kailibrate/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/kaijen/kailibrate/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/kaijen/kailibrate/compare/v1.4.1...v1.4.2
