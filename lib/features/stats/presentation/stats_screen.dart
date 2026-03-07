@@ -565,7 +565,6 @@ class _HistorySectionState extends State<_HistorySection> {
                       visibleMinX: minX,
                       visibleMaxX: maxX,
                       onPointTap: (id) {
-                        Navigator.of(context, rootNavigator: true).pop();
                         context.push('/prediction/$id');
                       },
                     ),
