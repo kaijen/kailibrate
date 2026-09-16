@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Project name is now written in lowercase ("kailibrate") wherever it
+  appears as a word: app name and launcher label, share subjects, the
+  OpenRouter `X-Title` header, AI prompt templates, GitHub release
+  title, README, developer and user documentation. Identifiers were
+  already lowercase and are unchanged; the Dart class `KailibrateApp`
+  keeps its UpperCamelCase spelling
+
+### Removed
+- The generated MkDocs output in `site/` is no longer tracked; the docs
+  workflow builds it on the runner and deploys via mike
+
 ## [1.7.1] - 2026-06-02
 
 ### Fixed

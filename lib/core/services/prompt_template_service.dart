@@ -45,7 +45,7 @@ class PromptTemplateService {
       id: 'default_yesno',
       name: 'Wahr/Falsch-Fragen (epistemisch)',
       isDefault: true,
-      body: r'''Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+      body: r'''Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: {topic}
 Anzahl: {count}
 
@@ -81,7 +81,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
       id: 'default_interval',
       name: 'Intervall-Fragen (epistemisch)',
       isDefault: true,
-      body: r'''Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+      body: r'''Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: {topic}
 Anzahl: {count}
 
@@ -120,7 +120,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
       id: 'default_aleatory_binary',
       name: 'Ja/Nein-Prognosen (aleatorisch)',
       isDefault: true,
-      body: r'''Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+      body: r'''Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: {topic}
 Anzahl: {count}
 Heutiges Datum: {date}
@@ -155,7 +155,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
       id: 'default_aleatory_interval',
       name: 'Intervall-Prognosen (aleatorisch)',
       isDefault: true,
-      body: r'''Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+      body: r'''Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: {topic}
 Anzahl: {count}
 Heutiges Datum: {date}

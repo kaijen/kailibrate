@@ -1,6 +1,6 @@
 # Über Mich
 
-Kailibrate ist ein persönliches Projekt – und hinter jedem Projekt steckt eine Haltung.
+kailibrate ist ein persönliches Projekt – und hinter jedem Projekt steckt eine Haltung.
 
 ---
 
@@ -30,4 +30,4 @@ Gute Kommunikation entsteht im Gespräch, nicht durch Durchsagen. Zuhören ist g
 
 ## Wunsch nach einer besseren Welt für alle
 
-Nicht für eine privilegierte Gruppe, nicht für das eigene Land allein – für alle. Eine Welt, in der mehr Menschen ein gutes Leben führen können, ist erreichbar. Kailibrate ist ein kleiner Beitrag dazu, besser zu denken und weniger daneben zu liegen.
+Nicht für eine privilegierte Gruppe, nicht für das eigene Land allein – für alle. Eine Welt, in der mehr Menschen ein gutes Leben führen können, ist erreichbar. kailibrate ist ein kleiner Beitrag dazu, besser zu denken und weniger daneben zu liegen.

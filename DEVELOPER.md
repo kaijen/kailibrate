@@ -1,6 +1,6 @@
-# Entwicklerdokumentation – Kailibrate
+# Entwicklerdokumentation – kailibrate
 
-Diese Dokumentation richtet sich an Entwickler, die an Kailibrate mitarbeiten
+Diese Dokumentation richtet sich an Entwickler, die an kailibrate mitarbeiten
 oder den Aufbau verstehen wollen. Sie beginnt mit einem allgemeinen Überblick
 darüber, wie Android-Apps mit Flutter entstehen, erklärt anschließend die
 konkrete Architektur dieses Projekts, beschreibt jede Quelldatei einzeln und
@@ -28,7 +28,7 @@ schließt mit Build-Prozess und Deployment ab.
 
 Flutter ist ein UI-Toolkit von Google, mit dem aus **einer** Codebasis in der
 Sprache **Dart** native Apps für Android, iOS, Web und Desktop gebaut werden.
-Kailibrate nutzt davon ausschließlich das **Android**-Ziel.
+kailibrate nutzt davon ausschließlich das **Android**-Ziel.
 
 Die zentralen Bausteine:
 
@@ -62,7 +62,7 @@ ARM-Maschinencode, AOT) und bettet ihn in eine Standard-Android-App ein:
 
 ### Wiederkehrende Muster in einer Flutter-App
 
-| Aufgabe | Übliche Lösung | In Kailibrate |
+| Aufgabe | Übliche Lösung | In kailibrate |
 |---------|----------------|---------------|
 | Zustandsverwaltung | Provider/Riverpod/Bloc | **Riverpod** |
 | Navigation | Navigator / go_router | **go_router** |
@@ -87,7 +87,7 @@ rendert.
 
 ### Das Produktziel
 
-Kailibrate hilft, persönliche Wahrscheinlichkeitsschätzungen zu **kalibrieren**:
+kailibrate hilft, persönliche Wahrscheinlichkeitsschätzungen zu **kalibrieren**:
 Wer „70 %" sagt, sollte in 70 % der Fälle recht behalten. Der Kernzyklus ist:
 
 ```
@@ -627,7 +627,7 @@ Default.
 
 ## 5. Deployment
 
-Kailibrate wird **nicht** über den Play Store verteilt. Es gibt zwei
+kailibrate wird **nicht** über den Play Store verteilt. Es gibt zwei
 Deployment-Stränge, beide getriggert durch denselben `v*`-Tag-Push und parallel
 laufend:
 

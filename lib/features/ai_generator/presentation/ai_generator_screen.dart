@@ -577,7 +577,7 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
           mimeType: 'application/json',
         ),
       ],
-      subject: 'Kailibrate-Fragenkatalog',
+      subject: 'kailibrate-Fragenkatalog',
     );
   }
 

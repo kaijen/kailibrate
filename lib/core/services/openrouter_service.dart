@@ -53,7 +53,7 @@ class OpenRouterService {
               'Authorization': 'Bearer $apiKey',
               'Content-Type': 'application/json',
               'HTTP-Referer': 'https://github.com/kaijen/kailibrate',
-              'X-Title': 'Kailibrate',
+              'X-Title': 'kailibrate',
             },
             body: jsonEncode({
               'model': model,

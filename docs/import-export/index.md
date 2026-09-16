@@ -42,6 +42,6 @@ Ablauf:
 2. Das **Teilen-Symbol** in der AppBar antippen.
 3. Zieldienst im Android-Share-Sheet wählen – die Datei wird übertragen.
 
-Die exportierte Datei enthält die Auflösungen obfuskiert. Kailibrate zeigt beim Empfänger „Lösung vorhanden" und löst die Vorhersage nach der Schätzung automatisch auf.
+Die exportierte Datei enthält die Auflösungen obfuskiert. kailibrate zeigt beim Empfänger „Lösung vorhanden" und löst die Vorhersage nach der Schätzung automatisch auf.
 
 Mehr zum Format unter [Format-Referenz](format.md).

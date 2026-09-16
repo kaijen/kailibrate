@@ -1,4 +1,4 @@
-# ProGuard/R8-Regeln für Kailibrate.
+# ProGuard/R8-Regeln für kailibrate.
 #
 # Noch nicht aktiv: minifyEnabled/shrinkResources stehen in build.gradle
 # auf false (siehe Issue #63). Vor der Aktivierung einen Release-Build

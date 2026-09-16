@@ -114,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mimeType: 'application/json',
           ),
         ],
-        subject: 'Kailibrate-Export',
+        subject: 'kailibrate-Export',
       );
     } catch (e) {
       if (mounted) {
@@ -218,7 +218,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mimeType: 'application/json',
           ),
         ],
-        subject: 'Kailibrate-Backup',
+        subject: 'kailibrate-Backup',
       );
     } on BackupException catch (e) {
       if (mounted) {
@@ -347,7 +347,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(debugInfo);
-    await Share.share(jsonString, subject: 'Kailibrate Debug-Info');
+    await Share.share(jsonString, subject: 'kailibrate Debug-Info');
   }
 
   Future<void> _launchDocs() async {

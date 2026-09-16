@@ -1,6 +1,6 @@
 # Statistiken
 
-Kailibrate berechnet vier Kennzahlen, um die Qualität von Schätzungen zu messen. Nur aufgelöste Vorhersagen fließen ein.
+kailibrate berechnet vier Kennzahlen, um die Qualität von Schätzungen zu messen. Nur aufgelöste Vorhersagen fließen ein.
 
 ## Brier Score
 
@@ -40,7 +40,7 @@ W = (U − L) + 2·(L − Actual) / α      falls Actual < L
 W = (U − L) + 2·(Actual − U) / α      falls Actual > U
 ```
 
-Je enger das Intervall und je häufiger der tatsächliche Wert darin liegt, desto besser (niedriger). Wer mit hoher Konfidenz danebenliegt, wird härter bestraft: Ein verfehltes 95-%-Intervall kostet pro Distanzeinheit das Vierfache eines verfehlten 80-%-Intervalls. Kailibrate zeigt die Einzelwerte jeder Schätzung als Punkt-Diagramm über die Zeit – Treffer grün, Ausreißer rot. Ein Durchschnitt über alle Fragen hinweg wäre irreführend, da der Score einheitenabhängig ist: Ein guter Wert bei Körpergrößen (z. B. 5 cm) und ein guter Wert bei Einwohnerzahlen (z. B. 200.000) lassen sich nicht vergleichen.
+Je enger das Intervall und je häufiger der tatsächliche Wert darin liegt, desto besser (niedriger). Wer mit hoher Konfidenz danebenliegt, wird härter bestraft: Ein verfehltes 95-%-Intervall kostet pro Distanzeinheit das Vierfache eines verfehlten 80-%-Intervalls. kailibrate zeigt die Einzelwerte jeder Schätzung als Punkt-Diagramm über die Zeit – Treffer grün, Ausreißer rot. Ein Durchschnitt über alle Fragen hinweg wäre irreführend, da der Score einheitenabhängig ist: Ein guter Wert bei Körpergrößen (z. B. 5 cm) und ein guter Wert bei Einwohnerzahlen (z. B. 200.000) lassen sich nicht vergleichen.
 
 ---
 

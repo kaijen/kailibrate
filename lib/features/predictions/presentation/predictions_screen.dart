@@ -162,7 +162,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
             mimeType: 'application/json',
           ),
         ],
-        subject: 'Kailibrate-Aufgaben',
+        subject: 'kailibrate-Aufgaben',
       );
     } catch (e) {
       if (mounted) {

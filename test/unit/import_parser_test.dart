@@ -594,7 +594,7 @@ Hier sind deine Kalibrierungsfragen:
 $jsonPayload
 ```
 
-**Import:** Text kopieren → Calibrate öffnen → Import
+**Import:** Text kopieren → kailibrate öffnen → Import
 ''';
       final result = ImportParser.parseAutoDetect(content);
       expect(result.questions.first.text, 'Frage aus Code-Block');

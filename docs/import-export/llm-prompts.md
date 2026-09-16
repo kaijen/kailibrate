@@ -1,13 +1,13 @@
 # Fragenkataloge mit einem LLM erstellen
 
-Ein LLM wie Claude oder GPT-4 kann in Sekunden Dutzende Trivia-Fragen mit versteckten Antworten erzeugen. Der Trick: Die Antworten stecken als `resolution`-Feld in der Importdatei, aber ohne vorausgefüllte Schätzung. Kailibrate zeigt dann „Lösung vorhanden" – und wendet die Auflösung erst an, nachdem der Nutzer seine Schätzung abgegeben hat.
+Ein LLM wie Claude oder GPT-4 kann in Sekunden Dutzende Trivia-Fragen mit versteckten Antworten erzeugen. Der Trick: Die Antworten stecken als `resolution`-Feld in der Importdatei, aber ohne vorausgefüllte Schätzung. kailibrate zeigt dann „Lösung vorhanden" – und wendet die Auflösung erst an, nachdem der Nutzer seine Schätzung abgegeben hat.
 
 **Ablauf:**
 
 1. Prompt an LLM schicken → JSON/YAML kopieren
-2. In Kailibrate importieren (Zwischenablage oder Datei)
+2. In kailibrate importieren (Zwischenablage oder Datei)
 3. Jede Frage schätzen, ohne die Antwort zu kennen
-4. Nach der Schätzung löst Kailibrate automatisch auf und wertet aus
+4. Nach der Schätzung löst kailibrate automatisch auf und wertet aus
 
 ---
 
@@ -16,7 +16,7 @@ Ein LLM wie Claude oder GPT-4 kann in Sekunden Dutzende Trivia-Fragen mit verste
 Geeignet für Faktfragen, bei denen eine klare richtige Antwort existiert.
 
 ```
-Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: [THEMA, z.B. "Europäische Geografie" oder "Wissenschaftsgeschichte"]
 Anzahl: [ANZAHL, z.B. 15]
 
@@ -57,7 +57,7 @@ Format:
 Geeignet für numerische Schätzfragen: Jahreszahlen, Entfernungen, Bevölkerungszahlen.
 
 ```
-Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: [THEMA, z.B. "Historische Jahreszahlen" oder "Weltrekorde"]
 Anzahl: [ANZAHL, z.B. 10]
 
@@ -102,7 +102,7 @@ Format:
 Geeignet für zukunftsbezogene Ereignisse, bei denen die Antwort noch unbekannt ist. Kein `resolution`-Feld – der Nutzer löst später selbst auf.
 
 ```
-Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: [THEMA, z.B. "Bundesliga-Saison 2025/26" oder "Wirtschaft 2026"]
 Anzahl: [ANZAHL, z.B. 10]
 Heutiges Datum: [DATUM, z.B. "2026-03-04"]
@@ -141,7 +141,7 @@ Ausgabe ausschließlich als valides JSON, kein erklärender Text davor oder dana
 Geeignet für zukünftige Messwerte, die noch nicht feststehen. Kein `resolution`-Feld.
 
 ```
-Erstelle einen Fragenkatalog für die App Kailibrate im JSON-Format.
+Erstelle einen Fragenkatalog für die App kailibrate im JSON-Format.
 Thema: [THEMA, z.B. "Wirtschaftsindikatoren 2026" oder "Wetter im Sommer 2026"]
 Anzahl: [ANZAHL, z.B. 10]
 Heutiges Datum: [DATUM, z.B. "2026-03-04"]
@@ -184,7 +184,7 @@ Die erzeugten Fragen lassen sich direkt importieren oder als JSON-Datei teilen.
 
 **Tags:** Im Feld „Tags (optional)" können kommagetrennte Schlagworte vorgegeben
 werden. Der Generator verwendet dann ausschließlich diese Tags, was nützlich ist,
-wenn der importierte Katalog in Kailibrate gezielt nach Tags gefiltert werden soll.
+wenn der importierte Katalog in kailibrate gezielt nach Tags gefiltert werden soll.
 
 ---
 
@@ -196,4 +196,4 @@ wenn der importierte Katalog in Kailibrate gezielt nach Tags gefiltert werden so
 
 **Themenbreite:** Enge Themen (nur deutsche Hauptstädte) erzeugen homogene Schwierigkeit. Breite Themen (Weltgeografie, Naturwissenschaften, Geschichte) fordern das Kalibrierungsgefühl stärker.
 
-**Datei teilen ohne Spoiler:** Wer einen Katalog mit Auflösungen an andere weitergeben will, exportiert erst in Kailibrate und teilt den Export – die App obfuskiert die Auflösungen automatisch mit ROT13 + Base64.
+**Datei teilen ohne Spoiler:** Wer einen Katalog mit Auflösungen an andere weitergeben will, exportiert erst in kailibrate und teilt den Export – die App obfuskiert die Auflösungen automatisch mit ROT13 + Base64.

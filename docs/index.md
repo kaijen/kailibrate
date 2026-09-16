@@ -1,4 +1,4 @@
-# Kailibrate
+# kailibrate
 
 ## Warum Wahrscheinlichkeiten kalibrieren?
 
@@ -6,11 +6,11 @@ Jeder kennt das: „Das klappt wahrscheinlich" – aber wie wahrscheinlich ist w
 
 Kalibrierung bedeutet: Wer 70 % sagt, sollte damit in 70 % der Fälle recht behalten – nicht öfter, nicht seltener. Eine kalibrierte Person kennt die Grenzen ihres Wissens.
 
-Kailibrate macht diesen Lernprozess greifbar: Du formulierst Vorhersagen, schätzt ihre Wahrscheinlichkeit, trägst die Ergebnisse ein – und die App zeigt dir mit Kennzahlen und Kurven, wie gut deine Schätzungen wirklich sind.
+kailibrate macht diesen Lernprozess greifbar: Du formulierst Vorhersagen, schätzt ihre Wahrscheinlichkeit, trägst die Ergebnisse ein – und die App zeigt dir mit Kennzahlen und Kurven, wie gut deine Schätzungen wirklich sind.
 
 ---
 
-## Was Kailibrate macht
+## Was kailibrate macht
 
 **Vorhersagen erfassen** – manuell oder per Datei-Import. Jede Vorhersage bekommt eine Kategorie (Fakten oder Prognose), einen Typ (Wahr/Falsch, Ja/Nein, Intervall) und optional Tags und eine Deadline.
 

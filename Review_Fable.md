@@ -1,4 +1,4 @@
-# Projekt-Review Kailibrate
+# Projekt-Review kailibrate
 
 **Datum:** 2026-06-09
 **Stand:** Branch `main` (d68c64a), App-Version laut CHANGELOG 1.7.1-beta.1

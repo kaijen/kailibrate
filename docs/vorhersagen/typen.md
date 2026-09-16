@@ -1,6 +1,6 @@
 # Vorhersage-Typen
 
-Kailibrate unterstützt drei Typen. Der Typ bestimmt, wie geschätzt und wie aufgelöst wird.
+kailibrate unterstützt drei Typen. Der Typ bestimmt, wie geschätzt und wie aufgelöst wird.
 
 ## Ja/Nein mit Konfidenz (`binary`)
 

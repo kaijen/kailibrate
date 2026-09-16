@@ -11,7 +11,7 @@ Der Generator nutzt [OpenRouter](https://openrouter.ai) als Schnittstelle zu ver
 **Einmalige Einrichtung:**
 
 1. Unter [openrouter.ai](https://openrouter.ai) registrieren und einen API-Key erstellen.
-2. In Kailibrate **Einstellungen → API-Key** öffnen und den Key eintragen.
+2. In kailibrate **Einstellungen → API-Key** öffnen und den Key eintragen.
 
 ---
 
@@ -71,10 +71,10 @@ empfohlene Identifikations-Header:
 | Header | Wert |
 |--------|------|
 | `HTTP-Referer` | `https://github.com/kaijen/kailibrate` |
-| `X-Title` | `Kailibrate` |
+| `X-Title` | `kailibrate` |
 
 Diese Header erscheinen in den OpenRouter-Logs und ordnen die Nutzung
-deines API-Keys der App Kailibrate zu (u. a. für die App-Ranglisten auf
+deines API-Keys der App kailibrate zu (u. a. für die App-Ranglisten auf
 openrouter.ai). Sie enthalten keine persönlichen Daten und keine Inhalte
 deiner Vorhersagen. Wer einen eigenen Fork betreibt, kann die Werte in
 `lib/core/services/openrouter_service.dart` anpassen.

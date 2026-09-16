@@ -560,7 +560,7 @@ questions:
     await file.writeAsString(yaml.trim());
     await Share.shareXFiles(
       [XFile(file.path, mimeType: 'application/yaml')],
-      subject: 'Kailibrate-Vorlage',
+      subject: 'kailibrate-Vorlage',
     );
   }
 

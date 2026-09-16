@@ -1,8 +1,8 @@
-# Kailibrate
+# kailibrate
 
 Android-App zum Kalibrieren persönlicher Wahrscheinlichkeitsschätzungen.
 
-Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht behalten. Kailibrate misst, ob das stimmt – und zeigt, wo Schätzungen systematisch zu hoch oder zu niedrig ausfallen.
+Wer sagt „70 % Wahrscheinlichkeit", sollte damit in 70 % der Fälle recht behalten. kailibrate misst, ob das stimmt – und zeigt, wo Schätzungen systematisch zu hoch oder zu niedrig ausfallen.
 
 ---
 

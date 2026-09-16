@@ -4,7 +4,7 @@ Dieses Dokument ist in zwei Teile gegliedert:
 
 - **Teil 1** – Allgemeine Muster und Boilerplate für Flutter-Android-Projekte
   dieser Bauart; wiederverwendbar für ähnliche Apps.
-- **Teil 2** – Projektspezifische Rahmenbedingungen für Kailibrate.
+- **Teil 2** – Projektspezifische Rahmenbedingungen für kailibrate.
 
 ---
 
@@ -340,7 +340,7 @@ lokale `key.properties` (in `.gitignore`).
 
 ## Projektziel
 
-Kailibrate ist eine Android-App (Flutter) zum Kalibrieren persönlicher
+kailibrate ist eine Android-App (Flutter) zum Kalibrieren persönlicher
 Wahrscheinlichkeitsschätzungen. Nutzer erfassen Vorhersagen zu beliebigen
 Ereignissen, schätzen deren Eintrittswahrscheinlichkeit und lösen sie auf.
 Statistiken zeigen, ob 70 %-Vorhersagen wirklich zu 70 % eintreten.

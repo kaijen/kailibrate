@@ -1,6 +1,6 @@
 version: 10
 board:
-    name: Kailibrate
+    name: kailibrate
 tasks_dir: tasks
 statuses:
     - name: backlog

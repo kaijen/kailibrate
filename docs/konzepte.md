@@ -9,7 +9,7 @@ Schlechte Kalibrierung äußert sich in zwei typischen Mustern:
 - **Überschätzung** – man sagt öfter 90 %, als die Realität rechtfertigt. Ereignisse treten seltener ein als erwartet.
 - **Unterschätzung** – man ist unnötig vorsichtig und sagt 60 %, wo 85 % angemessen wäre.
 
-Kailibrate misst beides mit Brier Score, Log Loss und der Kalibrierungskurve. Die Kennzahlen allein verbessern nichts – aber sie machen Muster sichtbar, die sonst im Alltag unbemerkt bleiben.
+kailibrate misst beides mit Brier Score, Log Loss und der Kalibrierungskurve. Die Kennzahlen allein verbessern nichts – aber sie machen Muster sichtbar, die sonst im Alltag unbemerkt bleiben.
 
 ---
 
@@ -83,7 +83,7 @@ Nur aufgelöste Vorhersagen fließen in Brier Score und Kalibrierungskurve ein.
 
 ## Theoretischer Hintergrund
 
-Wer tiefer einsteigen möchte – die Konzepte hinter Kailibrate sind gut
+Wer tiefer einsteigen möchte – die Konzepte hinter kailibrate sind gut
 erforscht und zugänglich aufbereitet:
 
 ### Epistemisch vs. aleatorisch
@@ -107,7 +107,7 @@ Artikeln:
 scheinbar Unmessbares fast immer messen lässt – und dass kalibrierte
 Schätzer der Schlüssel dazu sind. Hubbard zeigt, dass Kalibrierung durch
 Übung mit Feedback nachweislich trainierbar ist: genau der Ansatz, den
-Kailibrate mit Schätzen → Auflösen → Statistik umsetzt. Die
+kailibrate mit Schätzen → Auflösen → Statistik umsetzt. Die
 90-%-Konfidenzintervalle aus dem Buch entsprechen dem `interval`-Typ.
 
 ### Bayesianisches Denken

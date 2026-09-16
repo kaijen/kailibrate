@@ -87,7 +87,7 @@ jobs:
       - name: GitHub Release erstellen
         uses: softprops/action-gh-release@v2
         with:
-          name: Kailibrate ${{ github.ref_name }}
+          name: kailibrate ${{ github.ref_name }}
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
