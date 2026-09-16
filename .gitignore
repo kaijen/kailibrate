@@ -61,3 +61,6 @@ sbom.cdx.json
 
 # MkDocs-Build-Ausgabe (CI baut neu und deployt via mike)
 /site/
+
+# Wird vor dem Docs-Build aus CHANGELOG.md kopiert (siehe docs.yml)
+/docs/changelog.md
